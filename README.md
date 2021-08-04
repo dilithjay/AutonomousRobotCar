@@ -1,8 +1,32 @@
 # Autonomous Robot Car
-A robot car capable of driving autonomously on a track containing obstacles such as pedestrians, other vehicles and traffic lights.
+The goal of this project is to develop a robot car capable of navigating autonomously on a down-scaled track containing obstacles such as pedestrians, other vehicles, etc.. The robot is also expected to stay within the the bounds of lane lines while abiding road rules such as traffic lights. Additionally, the robot shall have a fail-safe such that in the case that the remaining modules fail, the robot should be capable of avoiding collisions.
+
+The hardware components being used for this robot are as follows:
+* Raspberry Pi 4 Model B
+* Pi Camera Module v2
+* Arduino Uno
+* L298N Motor Driver
+* HC-SR04 Ultrasonic Sensors x3
+* Robot Car Chassis + Gear Motors + Wheels
+* 10000mAh Xiaomi Power Bank
+* 18650 Li-ion batteries x2
+
+![image](https://user-images.githubusercontent.com/54039395/128195441-8c4cc0fa-7e37-4d53-9361-a5647f88b1a4.png)
+
+Accordingly, the following subtasks need to be addressed:
+* Movement: Rotate the wheels at the speeds decided by the Raspberry Pi and Arduino.
+* Fail-safe: Stop or slow down vehicle if object gets closer than a threshold.
+* Lane detection: Detect the path and decide on wheel speeds accordingly.
+* Object Detection: Pedestrian/vehicle/traffic light detection.
+
+![image](https://user-images.githubusercontent.com/54039395/128195567-983ded8c-820f-4d16-b21a-72ef03cb2f43.png)
 
 ## Weekly Reports
 ### July 26th to August 1st
 * Created the basic setup for communication between Arduino and Raspberry Pi using I2C.
 * Added functionality to control the motors from the Raspberry Pi via the Arduino and motor driver.
 * Created simulation on Webots to test a simple lane detection algorithm where the bottom half of the image is used to detect edges towards the left and right of the camera views and move the robot in an attempt to center it between the edges.
+* It was noticed that at low frequencies of PWM provided by the Arduino, the motor tends to not rotate without a jumpstart. This is likely due to the friction of the gears in the motors and some machine oil might help.
+
+### August 2nd to August 8th (Present)
+* Ordered some rechargeable batteries (model: 18650) to increase the power provided to the motors. This would likely help since currently it's been powered by USB 5V but the motors and motor driver require a combined total of 7.4V to operate at maximum power.
