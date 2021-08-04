@@ -25,11 +25,10 @@ Accordingly, the following subtasks need to be addressed:
 ### July 26th to August 1st
 * Created the basic setup for communication between Arduino and Raspberry Pi using I2C.
 * Added functionality to control the motors from the Raspberry Pi via the Arduino and motor driver.
+* It was noticed that at low frequencies of PWM provided by the Arduino, the motor tends to not rotate without a jumpstart. This is likely due to the friction of the gears in the motors and some machine oil might help.
 * Created simulation on Webots to test a simple lane detection algorithm where the bottom half of the image is used to detect edges towards the left and right of the camera views and move the robot in an attempt to center it between the edges.
 
 https://user-images.githubusercontent.com/54039395/128219606-5386d9f3-06b2-4d6c-a850-e92531aedd91.mp4
-
-* It was noticed that at low frequencies of PWM provided by the Arduino, the motor tends to not rotate without a jumpstart. This is likely due to the friction of the gears in the motors and some machine oil might help.
 
 ### August 2nd to August 8th (Present)
 * Ordered some rechargeable batteries (model: 18650) to increase the power provided to the motors. This would likely help since currently it's been powered by USB 5V but the motors and motor driver require a combined total of 7.4V to operate at maximum power.
