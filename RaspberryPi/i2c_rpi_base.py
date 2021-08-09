@@ -1,4 +1,5 @@
 from smbus import SMBus
+from MovementModule import movement
 
 # Address of slave device (Arduino)
 addr = 0x8
