@@ -3,7 +3,7 @@ The goal of this project is to develop a robot car capable of navigating autonom
 
 The hardware components being used for this robot and their prices are as follows:
 | Component Name | Price |
-| -------------- | ----- |
+| -------------- | ----: |
 | Raspberry Pi 4 Model B | LKR 10,000 |
 | Pi Camera Module v2 | LKR 6,000 |
 | Arduino UNO | LKR 1,000 |
@@ -13,7 +13,7 @@ The hardware components being used for this robot and their prices are as follow
 | 20000mAh Xiaomi Power Bank | LKR 7,000 |
 | TR 14500 Li-ion batteries x2 | LKR 700 |
 
-| Total Price | LKR 20,000 |
+| Total Price | LKR 27,000 |
 | ------- | ----- |
 
 ![image](https://user-images.githubusercontent.com/54039395/128195441-8c4cc0fa-7e37-4d53-9361-a5647f88b1a4.png)
