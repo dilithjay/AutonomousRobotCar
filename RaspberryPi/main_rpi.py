@@ -12,10 +12,11 @@ camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
+# Initialize module objects
 mv = Movement()
 ld = LaneDetection()
-prev_l, prev_r = 0, 0
 
+# Loop over incoming camera frames
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     img = frame.array
     cv2.imshow("original", img)
