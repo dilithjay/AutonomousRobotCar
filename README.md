@@ -62,3 +62,17 @@ The following is a demo of the implementation so far. I provide the required spe
 As seen in the video, the speeds are given as input in the format `{left speed} {right speed}`. Setting either of them to zero stops the respective wheel(s). Setting either to a value less than 255 would slow down the wheel(s).
 
 https://user-images.githubusercontent.com/54039395/128216670-790ba952-6d19-4c42-b52d-080d40fb329c.mp4
+
+### Week 3 (August 9th to August 15th) (In Progress)
+* Tested ultrasonic sensors and selected 3 with minimal glitches (a few sensors gave incorrect readings intermittently).
+* Built a frame to hold all the hardware and finished assembling them. This will likely be the setup I'll use to test for the entirety of the project.
+* A couple of challenges faced during assembly:
+  * Limited space for placing all hardware components. Solution: Built a 2nd platform to place the motor driver and batteries.
+  * The Field of View of the camera was noticed to be quite low. As a result, the path was largely not within view. Solution: Added a slanted bar to look have the camera point at the front of the car.
+
+<img src="https://user-images.githubusercontent.com/54039395/129077279-8ed3d4fd-fd20-4624-a787-7a1bc6ab9a12.jpg" width="50%"><img src="https://user-images.githubusercontent.com/54039395/129077318-a8a559f9-0b6b-4979-ad87-a4a1e27da410.jpg" width="50%">
+<p align="center"><i>Robot Car</i></p>
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/54039395/129077575-9851f956-6d24-4f6e-aa3a-170f794f4eda.jpg" width="70%"><br>
+  <i>Track</i>
+</p>
