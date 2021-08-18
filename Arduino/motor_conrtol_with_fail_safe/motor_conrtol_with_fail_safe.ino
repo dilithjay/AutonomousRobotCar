@@ -95,10 +95,10 @@ void setRightSpeed(byte num){
 
 // Calculate distance from ultrasonic sensor readings
 int getUltrasonicDistance(int pin){
- pinMode(pin, OUTPUT);
- digitalWrite(pin, HIGH);
- delay(50);
- digitalWrite(pin, LOW);
- pinMode(pin, INPUT);
- return pulseIn(pin, HIGH, (unsigned long)60000) / 29 / 2;
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, HIGH);
+  delay(50);
+  digitalWrite(pin, LOW);
+  pinMode(pin, INPUT);
+  return pulseIn(pin, HIGH, (unsigned long)60000) / 29 / 2;
 }
