@@ -63,12 +63,13 @@ As seen in the video, the speeds are given as input in the format `{left speed} 
 
 https://user-images.githubusercontent.com/54039395/128216670-790ba952-6d19-4c42-b52d-080d40fb329c.mp4
 
-### Week 3 (August 9th to August 15th) (In Progress)
+### Week 3 (August 9th to August 15th)
 * Tested ultrasonic sensors and selected 3 with minimal glitches (a few sensors gave incorrect readings intermittently).
 * Built a frame to hold all the hardware and finished assembling them. This will likely be the setup I'll use to test for the entirety of the project.
 * A couple of challenges faced during assembly:
   * Limited space for placing all hardware components. Solution: Built a 2nd platform to place the motor driver and batteries.
   * The Field of View of the camera was noticed to be quite low. As a result, the path was largely not within view. Solution: Added a slanted bar to look have the camera point at the front of the car.
+* Implemented fail safe on Arduino. Not yet tested.
 
 <img src="https://user-images.githubusercontent.com/54039395/129077279-8ed3d4fd-fd20-4624-a787-7a1bc6ab9a12.jpg" width="50%"><img src="https://user-images.githubusercontent.com/54039395/129077318-a8a559f9-0b6b-4979-ad87-a4a1e27da410.jpg" width="50%">
 <p align="center"><i>Robot Car</i></p>
@@ -76,3 +77,12 @@ https://user-images.githubusercontent.com/54039395/128216670-790ba952-6d19-4c42-
   <img src="https://user-images.githubusercontent.com/54039395/129077575-9851f956-6d24-4f6e-aa3a-170f794f4eda.jpg" width="70%"><br>
   <i>Track</i>
 </p>
+
+### Week 4 (August 16th to August 22nd) (In Progress)
+* Made calculations for angle of the Pi Camera (based on Field of View / FOV and height) and adjusted the camera on the car, accordingly:
+
+<img src="https://user-images.githubusercontent.com/54039395/129904842-99c70a72-85ae-4b3a-b10d-7c4673c639fa.jpg" width="49%"> <img src="https://user-images.githubusercontent.com/54039395/129913353-035cf7bf-c606-477a-ae2c-3f6b25ae1b9a.jpg" width="49%">
+
+Even though the width of the road between lane lines is approximately 20 cm, calculations were made using 25 cm to leave room for error. The horizontal FOV of the Pi camera module v2 is `62.2 degrees` while the vertical FOV is `48.8 degrees`. A triangle can be formed using this width and the boundaries of the FOV (see 1st diagram). Using this triangle and the angles of each corner, the perpendicular distance to the width is calculated as `width / 2 * tan((180 - 62.2) / 2) = 20.72 cm`
+
+Using the 2nd diagram, a perpendicular line can be drawn from the point of contact of the lower bound of the FOV to the camera holding bar. The length of this perpendicular can be calculated as `20.72 * sin(90 - 48.8/2) = 18.87 cm`. The distances to the incidence point of this perpendicular on the bar from the base of the bar is equal to `9.5 - 20.72 * cos(90 - 48.8/2) = 0.94 cm`. Therefore, an equation for the angle (say `x`) of the bar can be obtained as `0.94 * sin(x) + 9.5 = 18.87 * cos(x)`. Solving this equation, we get `x = 57 degrees`. Thus, the tilt of the bar was adjusted accordingly.
