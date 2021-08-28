@@ -78,16 +78,16 @@ void stop_and_wait(int millisecs){
 }
 
 void setLeftSpeed(byte num){
-  Serial.print("Left Speed: ");
-  Serial.println(num);
+  //Serial.print("Left Speed: ");
+  //Serial.println(num);
   analogWrite(enB, num);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
 }
 
 void setRightSpeed(byte num){
-  Serial.print("Right Speed: ");
-  Serial.println(num);
+  //Serial.print("Right Speed: ");
+  //Serial.println(num);
   analogWrite(enA, num);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -100,5 +100,7 @@ int getUltrasonicDistance(int pin){
   delay(50);
   digitalWrite(pin, LOW);
   pinMode(pin, INPUT);
-  return pulseIn(pin, HIGH, (unsigned long)60000) / 29 / 2;
+  int result = pulseIn(pin, HIGH, (unsigned long)60000) / 29 / 2;
+  Serial.println(result);
+  return result;
 }

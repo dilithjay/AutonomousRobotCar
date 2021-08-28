@@ -23,7 +23,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     l_speed, r_speed, canny = ld.get_wheel_speeds(img)
     cv2.imshow("canny", canny)
-    if l_speed != None:
+
+    if l_speed is not None:
         mv.set_speed(int(l_speed * 255), int(r_speed * 255))
         print(int(l_speed * 255), int(r_speed * 255))
 
