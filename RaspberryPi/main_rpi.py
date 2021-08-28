@@ -21,18 +21,21 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     img = frame.array
     cv2.imshow("original", img)
 
-    l_speed, r_speed, canny = ld.get_wheel_speeds(img)
+    # Lane Detection portion
+    turn_amount, canny = ld.get_turn_amount(img)
     cv2.imshow("canny", canny)
+    if turn_amount is not None:
+        mv.set_turn_amount(turn_amount)
 
-    if l_speed is not None:
-        mv.set_speed(int(l_speed * 255), int(r_speed * 255))
-        print(int(l_speed * 255), int(r_speed * 255))
+    # Object Detection portion (temp)
+    mv.set_speed(180)
 
+    mv.apply_speeds()
     rawCapture.truncate(0)
 
     if cv2.waitKey(1) == ord('q'):
         break
 
-mv.set_speed(0, 0)
+mv.reset_speeds(0, 0)
 camera.close()
 cv2.destroyAllWindows()

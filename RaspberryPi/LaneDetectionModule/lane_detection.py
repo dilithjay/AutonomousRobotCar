@@ -66,41 +66,12 @@ class LaneDetection:
             return image[range_h[0]:range_h[1], range_w[0]:range_w[1]], range_h[1] - range_h[0], range_w[1] - range_w[0]
         return image[-lines:, range_w[0]:range_w[1]], lines, range_w[1] - range_w[0]
 
-    def get_direction(self, image, canny=True, crop=True, lines=None):
+    def get_speed_fractions(self, image):
         """
-        Method to get a measure of how much to turn from the current direction.
-
-        :param image: Image to use to make the decision.
-        :param canny: Whether canny edge detector should be applied.
-        :param crop: Whether image needs to be cropped.
-        :param lines: Whether lines should be used if image should be cropped
-        :return: Measure of how much to turn based on current direction.
-        """
-        if crop:
-            image, h, w = self.crop_image(image, lines)
-        else:
-            h, w = image.shape[:2]
-        if canny:
-            image = self.get_canny(image)
-        k1 = k2 = -1
-        for i in range(w // 2):
-            p1 = image[h - 1, w // 2 - self.calibration + i]
-            p2 = image[h - 1, w // 2 - self.calibration - i]
-            if k1 == -1 and p1 > 0:
-                k1 = i
-            if k2 == -1 and p2 > 0:
-                k2 = i
-            if k1 != -1 and k2 != -1:
-                self.prev_k = k1 - k2
-                break
-        return self.prev_k
-
-    def get_wheel_speeds(self, image):
-        """
-        Method to get left and right wheel speeds.
+        Method to get left and right speeds as fractions.
 
         :param image: Image to be used to make the decision.
-        :return: Left wheel speed, Right wheel speed (range: 0 - 255). None if couldn't find edges.
+        :return: Left wheel speed, Right wheel speed (range: 0 - 1; None if couldn't find edges), canny image.
         """
 
         cropped, h, w = self.crop_image(image)
@@ -119,3 +90,14 @@ class LaneDetection:
                 if left != -1 and right != -1:
                     return left / max_pixels, right / max_pixels, canny
         return None, None, canny
+    
+    def get_turn_amount(self, image):
+        """
+        Calculate the turn amount (how much to turn right) using speed fractions
+        :param image: Image to be used to make the decision.
+        :return: turn amount (None if cannot find), canny image
+        """
+        l_fraction, r_fraction, canny = self.get_speed_fractions(image)
+        if l_fraction is not None:
+            return int((r_fraction - l_fraction) * 128), canny
+        return None, canny
