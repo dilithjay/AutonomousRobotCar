@@ -34,9 +34,11 @@ class Movement:
         l_speed, r_speed = self.get_speeds()
 
         # Write the speed data to the I2C bus
-        self.bus.write_i2c_block_data(self.address, l_speed, [r_speed])
+        try:
+            self.bus.write_i2c_block_data(self.address, l_speed, [r_speed])
+        except OSError as e:
+            print("Connection to Arduino lost:", e)
 
     def reset_speeds(self):
         """Reset the wheel speeds to 0."""
         self.bus.write_i2c_block_data(self.address, 0, [0])
-
