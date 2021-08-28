@@ -6,7 +6,7 @@ addr = 0x8
 # Reference to I2C port 1
 bus = SMBus(1)
 
-print("Enter 1eft speed and right speed")
+print("Enter left speed and right speed")
 
 while True:
     # Get left and right wheel speeds as input
