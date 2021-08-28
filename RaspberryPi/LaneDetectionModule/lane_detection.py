@@ -117,5 +117,5 @@ class LaneDetection:
                 if right == -1 and p2 > 0:
                     right = i
                 if left != -1 and right != -1:
-                    return left / max_pixels, right / max_pixels
-        return None, None
+                    return left / max_pixels, right / max_pixels, canny
+        return None, None, canny

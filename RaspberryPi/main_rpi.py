@@ -14,15 +14,18 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 
 # Initialize module objects
 mv = Movement()
-ld = LaneDetection()
+ld = LaneDetection(crop_range_w=(0, 1))
 
 # Loop over incoming camera frames
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     img = frame.array
     cv2.imshow("original", img)
 
-    l_speed, r_speed = ld.get_wheel_speeds(img)
-    mv.set_speed(l_speed, r_speed)
+    l_speed, r_speed, canny = ld.get_wheel_speeds(img)
+    cv2.imshow("canny", canny)
+    if l_speed != None:
+        mv.set_speed(int(l_speed * 255), int(r_speed * 255))
+        print(int(l_speed * 255), int(r_speed * 255))
 
     rawCapture.truncate(0)
 
