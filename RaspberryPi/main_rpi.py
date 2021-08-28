@@ -36,6 +36,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if cv2.waitKey(1) == ord('q'):
         break
 
-mv.reset_speeds(0, 0)
+mv.reset_speeds()
 camera.close()
 cv2.destroyAllWindows()
