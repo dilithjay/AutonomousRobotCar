@@ -25,7 +25,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     turn_amount, canny = ld.get_turn_amount(img)
     cv2.imshow("canny", canny)
     if turn_amount is not None:
-        mv.set_turn_amount(turn_amount)
+        # TODO: Adjust delay according to speed
+        mv.set_delayed_turn_amount(1, turn_amount)
 
     # Object Detection portion (temp)
     mv.set_speed(180)

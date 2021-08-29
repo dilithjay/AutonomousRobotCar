@@ -1,4 +1,5 @@
 from smbus import SMBus
+from threading import Timer
 
 
 class Movement:
@@ -24,6 +25,10 @@ class Movement:
     def set_turn_amount(self, turn_amount):
         """Set the turn amount"""
         self.turn_amount = turn_amount
+
+    def set_delayed_turn_amount(self, delay, turn_amount):
+        timer = Timer(delay, self.set_turn_amount, [turn_amount])
+        timer.start()
 
     def set_speed(self, speed):
         """Set the overall speed of the robot."""
