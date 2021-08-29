@@ -78,7 +78,7 @@ https://user-images.githubusercontent.com/54039395/128216670-790ba952-6d19-4c42-
   <i>Track</i>
 </p>
 
-### Week 4 (August 16th to August 22nd) (In Progress)
+### Week 4 (August 16th to August 22nd)
 * Made calculations for angle of the Pi Camera (based on Field of View / FOV and height) and adjusted the camera on the car, accordingly:
 
 <img src="https://user-images.githubusercontent.com/54039395/129904842-99c70a72-85ae-4b3a-b10d-7c4673c639fa.jpg" width="49%"> <img src="https://user-images.githubusercontent.com/54039395/129913353-035cf7bf-c606-477a-ae2c-3f6b25ae1b9a.jpg" width="49%">
@@ -86,3 +86,10 @@ https://user-images.githubusercontent.com/54039395/128216670-790ba952-6d19-4c42-
 Even though the width of the road between lane lines is approximately 20 cm, calculations were made using 25 cm to leave room for error. The horizontal FOV of the Pi camera module v2 is `62.2 degrees` while the vertical FOV is `48.8 degrees`. A triangle can be formed using this width and the boundaries of the FOV (see 1st diagram). Using this triangle and the angles of each corner, the perpendicular distance to the width is calculated as `width / 2 * tan((180 - 62.2) / 2) = 20.72 cm`
 
 Using the 2nd diagram, a perpendicular line can be drawn from the point of contact of the lower bound of the FOV to the camera holding bar. The length of this perpendicular can be calculated as `20.72 * sin(90 - 48.8/2) = 18.87 cm`. The distances to the incidence point of this perpendicular on the bar from the base of the bar is equal to `9.5 - 20.72 * cos(90 - 48.8/2) = 0.94 cm`. Therefore, an equation for the angle (say `x`) of the bar can be obtained as `0.94 * sin(x) + 9.5 = 18.87 * cos(x)`. Solving this equation, we get `x = 57 degrees`. Thus, the tilt of the bar was adjusted accordingly.
+
+### Week 5 (August 23rd to August 29th)
+* Tested the fail-safe module. It is successful at avoiding collisions. Further tuning of parameters such as distance check frequency and thresholds is necessary.
+* Refactored the movement module such that it accepts the average `speed` and a `turn amount` (a measure of how much to the right the robot should turn). These metrics were used to calculate the left and right wheel speeds separately. This method is preferred because the lane detection module would only control the `turn amount` while the object detection modules would only control the `speed`. This makes it easier to calculate the minimum speed since both wheel speeds need not be considered separately.
+* Tested the lane detection module. The lower bound of the camera view was too far from the base of the car (approx. `15 cm` away). Accordingly, shortened the length of the bar holding the camera to `6 cm` which led to the lower bound of the view coming up to `9 cm` away from the base.
+* Used threading to delay the `turn amount` affecting the wheel speeds. This is added to further mitigate the problem of the base being too far ahead since the action required for the current view should be executed once the robot has arrived at that position. Currently, the delay is set to one second. However, it needs to be adjusted at runtime based on the speeds of the robot.
+* Concerns: Currently, the robot seems to be moving at quite a low speed. This is likely due to how heavy the robot is (approx. `1 kg`). The power bank is the heaviest component of the robot (approx `360 g`). A lower capacity power bank would likely weigh much less. 20,000 mAh is somewhat overkill and thus, can be reduced. Additionally, further weight can be dropped by switching to a 3D printed frame (which holds the components) since it can be designed more efficiently (as opposed to using hardboard boxes).
