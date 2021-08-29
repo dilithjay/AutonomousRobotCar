@@ -27,6 +27,12 @@ class Movement:
         self.turn_amount = turn_amount
 
     def set_delayed_turn_amount(self, delay, turn_amount):
+        """
+        Apply the turn amount to the wheels after a specified delay.
+
+        :param delay: Amount of time by which the applying of the turn amount should be delayed.
+        :param turn_amount: Turn amount to be applied.
+        """
         timer = Timer(delay, self.set_turn_amount, [turn_amount])
         timer.start()
 

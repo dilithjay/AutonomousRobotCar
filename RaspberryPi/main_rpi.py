@@ -10,7 +10,7 @@ from picamera import PiCamera
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 32
-rawCapture = PiRGBArray(camera, size=(640, 480))
+rawCapture = PiRGBArray(camera, size=camera.resolution)
 
 # Initialize module objects
 mv = Movement()
