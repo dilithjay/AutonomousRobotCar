@@ -76,20 +76,20 @@ class LaneDetection:
 
         cropped, h, w = self.crop_image(image)
         canny = self.get_canny(cropped)
+        left = right = 0
 
         if self.method == LaneDetectionHandlerType.LAST_ROW:
-            left = right = -1
             max_pixels = w // 2 - self.calibration
             for i in range(max_pixels):
                 p1 = canny[h - 1, max_pixels + i]
                 p2 = canny[h - 1, max_pixels - i]
-                if left == -1 and p1 > 0:
+                if left == 0 and p1 > 0:
                     left = i
-                if right == -1 and p2 > 0:
+                if right == 0 and p2 > 0:
                     right = i
-                if left != -1 and right != -1:
-                    return left / max_pixels, right / max_pixels, canny
-        return None, None, canny
+                if left > 0 and right > 0:
+                    break
+        return left, right, canny
     
     def get_turn_amount(self, image):
         """
@@ -98,6 +98,4 @@ class LaneDetection:
         :return: turn amount (None if cannot find), canny image
         """
         l_fraction, r_fraction, canny = self.get_speed_fractions(image)
-        if l_fraction is not None:
-            return int((r_fraction - l_fraction) * 128), canny
-        return None, canny
+        return int((r_fraction - l_fraction) * 128), canny
