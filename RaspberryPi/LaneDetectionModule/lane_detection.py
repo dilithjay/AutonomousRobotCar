@@ -89,7 +89,7 @@ class LaneDetection:
                     right = i
                 if left > 0 and right > 0:
                     break
-        return left, right, canny
+        return left/max_pixels, right/max_pixels, canny
     
     def get_turn_amount(self, image):
         """
@@ -98,4 +98,4 @@ class LaneDetection:
         :return: turn amount (None if cannot find), canny image
         """
         l_fraction, r_fraction, canny = self.get_speed_fractions(image)
-        return int((r_fraction - l_fraction) * 128), canny
+        return int((l_fraction - r_fraction) * 64), canny

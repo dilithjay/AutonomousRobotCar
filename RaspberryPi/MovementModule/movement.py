@@ -25,6 +25,7 @@ class Movement:
     def set_turn_amount(self, turn_amount):
         """Set the turn amount"""
         self.turn_amount = turn_amount
+        print(turn_amount)
 
     def set_delayed_turn_amount(self, delay, turn_amount):
         """
