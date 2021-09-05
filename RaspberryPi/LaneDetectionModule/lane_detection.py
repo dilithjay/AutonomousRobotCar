@@ -2,14 +2,17 @@ import cv2
 import numpy as np
 from enum import Enum
 
+AVG_GRAD = 111/180
+
 
 class LaneDetectionHandlerType(Enum):
-    LAST_ROW = 1
+    ONE_ROW = 1
+    LINE_PREDICT = 2
 
 
 class LaneDetection:
     def __init__(self, calibration=0, crop_range_w=(0.2, 0.8), crop_range_h=(0.5, 1), blur_kernel_size=(3, 3),
-                 canny_threshold_range=(30, 90), method=LaneDetectionHandlerType.LAST_ROW):
+                 canny_threshold_range=(30, 90), method=LaneDetectionHandlerType.ONE_ROW):
         """
         Initialize the Lane Detection module.
 
@@ -76,21 +79,50 @@ class LaneDetection:
 
         cropped, h, w = self.crop_image(image)
         canny = self.get_canny(cropped)
-        left = right = 0
+        left, right = 0, 0
 
-        if self.method == LaneDetectionHandlerType.LAST_ROW:
-            max_pixels = w // 2 - self.calibration
-            for i in range(max_pixels):
-                p1 = canny[h - 1, max_pixels + i]
-                p2 = canny[h - 1, max_pixels - i]
-                if left == 0 and p1 > 0:
-                    left = i
-                if right == 0 and p2 > 0:
-                    right = i
-                if left > 0 and right > 0:
-                    break
-        return left/max_pixels, right/max_pixels, canny
-    
+        if self.method == LaneDetectionHandlerType.ONE_ROW:
+            left, right = self.get_speed_fractions_one_row(canny, w, h)
+        elif self.method == LaneDetectionHandlerType.LINE_PREDICT:
+            left, right = self.get_speed_fractions_line_predict(canny, w)
+        return left, right, canny
+
+    def get_speed_fractions_line_predict(self, canny, w):
+        left, right = 0, 0
+        left_img, right_img = canny[:, :w // 2 - self.calibration], canny[:, w // 2 - self.calibration:]
+        left_lines = cv2.HoughLinesP(left_img, 1, np.pi / 180, 100, minLineLength=180, maxLineGap=100)
+        right_lines = cv2.HoughLinesP(right_img, 1, np.pi / 180, 100, minLineLength=180, maxLineGap=100)
+        if len(left_lines):
+            left = self.get_fraction_using_line_grads(left_lines)
+        if len(right_lines):
+            right = self.get_fraction_using_line_grads(right_lines)
+        return left, right
+
+    @staticmethod
+    def get_fraction_using_line_grads(lines):
+        avg_grad = 0
+        fraction = 0
+        for line in lines:
+            avg_grad += abs((line[3] - line[1]) / (line[2] - line[0]))
+        avg_grad /= len(lines)
+        if avg_grad < AVG_GRAD:
+            fraction = 1 - avg_grad / AVG_GRAD
+        return fraction
+
+    def get_speed_fractions_one_row(self, canny, w, h):
+        max_pixels = w // 2 - self.calibration
+        left, right = 0, 0
+        for i in range(max_pixels):
+            p1 = canny[h - 1, max_pixels + i]
+            p2 = canny[h - 1, max_pixels - i]
+            if left == 0 and p1 > 0:
+                left = i
+            if right == 0 and p2 > 0:
+                right = i
+            if left > 0 and right > 0:
+                break
+        return left/max_pixels, right/max_pixels
+
     def get_turn_amount(self, image):
         """
         Calculate the turn amount (how much to turn right) using speed fractions
