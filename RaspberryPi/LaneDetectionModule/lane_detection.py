@@ -81,20 +81,30 @@ class LaneDetection:
         canny = self.get_canny(cropped)
         left, right = 0, 0
 
+        lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 100, minLineLength=50, maxLineGap=50)
         if self.method == LaneDetectionHandlerType.ONE_ROW:
             left, right = self.get_speed_fractions_one_row(canny, w, h)
         elif self.method == LaneDetectionHandlerType.LINE_PREDICT:
             left, right = self.get_speed_fractions_line_predict(canny, w)
-        return left, right, canny
+
+        # Temp: Added to see lines when debugging
+        canny_3 = cv2.merge([canny, canny, canny])
+        if lines is not None:
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                cv2.line(canny_3, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
+
+        return left, right, canny_3
 
     def get_speed_fractions_line_predict(self, canny, w):
         left, right = 0, 0
         left_img, right_img = canny[:, :w // 2 - self.calibration], canny[:, w // 2 - self.calibration:]
         left_lines = cv2.HoughLinesP(left_img, 1, np.pi / 180, 100, minLineLength=180, maxLineGap=100)
         right_lines = cv2.HoughLinesP(right_img, 1, np.pi / 180, 100, minLineLength=180, maxLineGap=100)
-        if len(left_lines):
+
+        if left_lines is not None:
             left = self.get_fraction_using_line_grads(left_lines)
-        if len(right_lines):
+        if right_lines is not None:
             right = self.get_fraction_using_line_grads(right_lines)
         return left, right
 
@@ -102,8 +112,10 @@ class LaneDetection:
     def get_fraction_using_line_grads(lines):
         avg_grad = 0
         fraction = 0
+
         for line in lines:
-            avg_grad += abs((line[3] - line[1]) / (line[2] - line[0]))
+            x1, y1, x2, y2 = line[0]
+            avg_grad += abs((y2 - y1) / (x2 - x1))
         avg_grad /= len(lines)
         if avg_grad < AVG_GRAD:
             fraction = 1 - avg_grad / AVG_GRAD
