@@ -7,12 +7,13 @@ AVG_GRAD = 2
 
 class LaneDetectionHandlerType(Enum):
     ONE_ROW = 1
-    LINE_PREDICT = 2
+    MANY_ROWS = 2
+    LINE_PREDICT = 3
 
 
 class LaneDetection:
     def __init__(self, calibration=0, crop_range_w=(0.2, 0.8), crop_range_h=(0.5, 1), blur_kernel_size=(3, 3),
-                 canny_threshold_range=(30, 90), method=LaneDetectionHandlerType.ONE_ROW):
+                 canny_threshold_range=(30, 90), row_count=5, method=LaneDetectionHandlerType.ONE_ROW):
         """
         Initialize the Lane Detection module.
 
@@ -21,6 +22,7 @@ class LaneDetection:
         :param crop_range_h: Fraction of the height to be considered when detecting lanes.
         :param blur_kernel_size: Size of the Gaussian Blur kernel
         :param canny_threshold_range: Low and high thresholds of Canny Edge Detector.
+        :param row_count: Number of rows considered for MANY_ROWS
         :param method: Import LaneDetectionHandlerType enum to change how wheel speeds are calculated.
         """
         self.calibration = calibration
@@ -28,8 +30,10 @@ class LaneDetection:
         self.crop_range_h = crop_range_h
         self.kernel_size = blur_kernel_size
         self.low_threshold, self.high_threshold = canny_threshold_range
+        self.row_count = row_count
         self.method = method
-        self.prev_k = 0
+
+        self.correct_fraction = 0.4
 
     def get_canny(self, image):
         """
@@ -85,16 +89,22 @@ class LaneDetection:
             left, right = self.get_speed_fractions_one_row(canny, w, h)
         elif self.method == LaneDetectionHandlerType.LINE_PREDICT:
             left, right = self.get_speed_fractions_line_predict(canny, w)
+            # Temp: Added to see lines when debugging
+            lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 100, minLineLength=50, maxLineGap=50)
+            canny = cv2.merge([canny, canny, canny])
+            if lines is not None:
+                for line in lines:
+                    x1, y1, x2, y2 = line[0]
+                    cv2.line(canny, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
+        elif self.method == LaneDetectionHandlerType.MANY_ROWS:
+            for i in range(self.row_count):
+                l, r = self.get_speed_fractions_one_row(canny, w, h - i)
+                left += l
+                right += r
+            left /= self.row_count
+            right /= self.row_count
 
-        # Temp: Added to see lines when debugging
-        lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 100, minLineLength=50, maxLineGap=50)
-        canny_3 = cv2.merge([canny, canny, canny])
-        if lines is not None:
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                cv2.line(canny_3, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
-
-        return left, right, canny_3
+        return left, right, canny
 
     def get_speed_fractions_line_predict(self, canny, w):
         left, right = 0, 0
@@ -118,12 +128,12 @@ class LaneDetection:
         fraction = 1 - avg_grad / AVG_GRAD
         return fraction
 
-    def get_speed_fractions_one_row(self, canny, w, h):
+    def get_speed_fractions_one_row(self, canny, w, row):
         max_pixels = w // 2 - self.calibration
         left, right = 0, 0
         for i in range(max_pixels):
-            p1 = canny[h - 1, max_pixels + i]
-            p2 = canny[h - 1, max_pixels - i]
+            p1 = canny[row - 1, max_pixels + i]
+            p2 = canny[row - 1, max_pixels - i]
             if left == 0 and p1 > 0:
                 left = i
             if right == 0 and p2 > 0:
@@ -139,4 +149,17 @@ class LaneDetection:
         :return: turn amount (None if cannot find), canny image
         """
         l_fraction, r_fraction, canny = self.get_speed_fractions(image)
-        return int((l_fraction - r_fraction) * 64), canny
+
+        if l_fraction == 0 and r_fraction > 0:
+            turn_amount = int((self.correct_fraction - r_fraction) * 64)
+        elif r_fraction == 0 and l_fraction > 0:
+            turn_amount = int((l_fraction - self.correct_fraction) * 64)
+        elif l_fraction == 0 and r_fraction == 0:
+            turn_amount = None
+        else:
+            turn_amount = int((l_fraction - r_fraction) * 64)
+            if abs(turn_amount) < 2:
+                self.correct_fraction = l_fraction
+        print(turn_amount)
+
+        return turn_amount, canny

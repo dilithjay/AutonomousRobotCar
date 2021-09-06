@@ -10,7 +10,7 @@ cap.set(4, 480)
 
 # Initialize module objects
 # mv = Movement()
-ld = LaneDetection(crop_range_h=(.3, .9), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
+ld = LaneDetection(crop_range_h=(.3, .9), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 
 # Loop over incoming camera frames
 while True:
@@ -19,7 +19,6 @@ while True:
 
     # Lane Detection portion
     turn_amount, canny = ld.get_turn_amount(img)
-    print(turn_amount)
     cv2.imshow("canny", canny)
 
     # TODO: Adjust delay according to speed
