@@ -1,5 +1,4 @@
-from MovementModule.movement import Movement
-from LaneDetectionModule.lane_detection import LaneDetection
+from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 
 # For Camera Input
 import cv2
@@ -13,8 +12,7 @@ camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=camera.resolution)
 
 # Initialize module objects
-mv = Movement()
-ld = LaneDetection(crop_range_h=(.5, .9), crop_range_w=(0, 1))
+ld = LaneDetection(crop_range_h=(.5, .9), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
 
 # Loop over incoming camera frames
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -23,20 +21,14 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Lane Detection portion
     turn_amount, canny = ld.get_turn_amount(img)
+    print(turn_amount)
     cv2.imshow("canny", canny)
-
-    # TODO: Adjust delay according to speed
-    mv.set_delayed_turn_amount(.5, turn_amount)
-
-    # Object Detection portion (temp)
-    mv.set_speed(100)
-
-    mv.apply_speeds()
+    
     rawCapture.truncate(0)
 
     if cv2.waitKey(1) == ord('q'):
         break
 
-mv.reset_speeds()
 camera.close()
 cv2.destroyAllWindows()
+
