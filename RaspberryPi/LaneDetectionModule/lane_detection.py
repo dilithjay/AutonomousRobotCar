@@ -111,7 +111,6 @@ class LaneDetection:
     @staticmethod
     def get_fraction_using_line_grads(lines):
         avg_grad = 0
-        fraction = 0
         for line in lines:
             x1, y1, x2, y2 = line[0]
             avg_grad += abs((y2 - y1) / (x2 - x1))
