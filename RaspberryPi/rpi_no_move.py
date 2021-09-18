@@ -12,7 +12,7 @@ camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=camera.resolution)
 
 # Initialize module objects
-ld = LaneDetection(crop_range_h=(.5, .9), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
+ld = LaneDetection(crop_range_h=(.7, 1), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 
 # Loop over incoming camera frames
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
