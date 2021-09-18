@@ -47,7 +47,7 @@ class Movement:
 
         # Write the speed data to the I2C bus
         try:
-            self.bus.write_i2c_block_data(self.address, l_speed, [r_speed])
+            self.bus.write_i2c_block_data(self.address, r_speed, [l_speed])
         except OSError as e:
             print("Connection to Arduino lost:", e)
 

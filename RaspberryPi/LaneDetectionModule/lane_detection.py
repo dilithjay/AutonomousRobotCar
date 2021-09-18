@@ -30,7 +30,7 @@ class LaneDetection:
         self.crop_range_h = crop_range_h
         self.kernel_size = blur_kernel_size
         self.low_threshold, self.high_threshold = canny_threshold_range
-        self.row_count = row_count
+        self.row_count = 20
         self.method = method
 
         self.correct_fraction = 0.4
@@ -97,12 +97,12 @@ class LaneDetection:
                     x1, y1, x2, y2 = line[0]
                     cv2.line(canny, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
         elif self.method == LaneDetectionHandlerType.MANY_ROWS:
-            for i in range(self.row_count):
+            for i in range(0, h, 15):
                 l, r = self.get_speed_fractions_one_row(canny, w, h - i)
                 left += l
                 right += r
-            left /= self.row_count
-            right /= self.row_count
+            left /= h/15
+            right /= h/15
 
         return left, right, canny
 
@@ -130,15 +130,18 @@ class LaneDetection:
 
     def get_speed_fractions_one_row(self, canny, w, row):
         max_pixels = w // 2 - self.calibration
-        left, right = 0, 0
+        left, right = max_pixels, max_pixels
+        found_l, found_r = False, False
         for i in range(max_pixels):
             p1 = canny[row - 1, max_pixels + i]
             p2 = canny[row - 1, max_pixels - i]
-            if left == 0 and p1 > 0:
+            if not found_l and p1 > 0:
+                found_l = True
                 left = i
-            if right == 0 and p2 > 0:
+            if not found_r and p2 > 0:
+                found_r = True
                 right = i
-            if left > 0 and right > 0:
+            if found_l and found_r:
                 break
         return left/max_pixels, right/max_pixels
 
@@ -157,6 +160,7 @@ class LaneDetection:
         elif l_fraction == 0 and r_fraction == 0:
             turn_amount = None
         else:
+            print(l_fraction, r_fraction, end=", ")
             turn_amount = int((l_fraction - r_fraction) * 64)
             if abs(turn_amount) < 2:
                 self.correct_fraction = l_fraction
