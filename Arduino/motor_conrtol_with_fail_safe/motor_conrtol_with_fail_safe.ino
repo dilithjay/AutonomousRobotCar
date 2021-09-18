@@ -97,7 +97,7 @@ void setRightSpeed(byte num){
 int getUltrasonicDistance(int pin){
   pinMode(pin, OUTPUT);
   digitalWrite(pin, HIGH);
-  delay(50);
+  delay(20);
   digitalWrite(pin, LOW);
   pinMode(pin, INPUT);
   int result = pulseIn(pin, HIGH, (unsigned long)60000) / 29 / 2;
