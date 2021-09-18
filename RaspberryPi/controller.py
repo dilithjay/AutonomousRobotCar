@@ -1,5 +1,4 @@
 from tkinter import *
-from time import sleep
 from MovementModule.movement import Movement
 
 
@@ -30,33 +29,21 @@ class Controller:
 
         self.running = False
 
+        # Bind canvas with key events
         window.bind("<Up>", self.up)
         window.bind("<Down>", self.down)
-        window.bind("<Any-KeyPress>", self.on_press)
-        window.bind("<Any-KeyRelease>", self.on_release)
+        window.bind("<Left>", self.left)
+        window.bind("<Right>", self.right)
 
-        window.mainloop()
-
-    def on_press(self, event):
-        if event.keysym == "Left":
-            self.left()
-        elif event.keysym == "Right":
-            self.right()
-        sleep(.1)
-        print("press", event.keysym)
-
-    def on_release(self, event):
-        self.mv.set_turn_amount(0)
-        self.mv.apply_speeds()
-        print(event.keysym)
+        window.mainloop()  # Create an event loop
 
     def up(self, event):
         if not self.running:
             self.mv.set_speed(int(self.speed_val.get()))
             self.speed_label["text"] = "Status: Running"
             self.running = True
-            self.mv.set_turn_amount(0)
-            self.mv.apply_speeds()
+        self.mv.set_turn_amount(0)
+        self.mv.apply_speeds()
 
     def down(self, event):
         if self.running:
@@ -67,14 +54,15 @@ class Controller:
             self.turn_label["text"] = "Turn amount: 0"
             self.running = False
 
-    def left(self):
+    def left(self, event):
         self.turn_label["text"] = "Turn amount: " + str(self.mv.change_turn_amount(-int(self.sensitivity.get())))
         self.mv.apply_speeds()
 
-    def right(self):
+    def right(self, event):
         self.turn_label["text"] = "Turn amount: " + str(self.mv.change_turn_amount(int(self.sensitivity.get())))
         self.mv.apply_speeds()
 
 
 if __name__ == "__main__":
     Controller()
+
