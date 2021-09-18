@@ -25,7 +25,7 @@ class Controller:
 
         self.speed_val = Entry(window, width=30)
         self.speed_val.place(x=150, y=140)
-        self.speed_val.insert(END, "180")
+        self.speed_val.insert(END, "100")
 
         self.running = False
 
@@ -41,20 +41,26 @@ class Controller:
         if not self.running:
             self.mv.set_speed(int(self.speed_val.get()))
             self.speed_label["text"] = "Status: Running"
-            self.mv.apply_speeds()
             self.running = True
+        self.mv.set_turn_amount(0)
+        self.mv.apply_speeds()
 
     def down(self, event):
         if self.running:
             self.mv.reset_speeds()
+            self.mv.set_turn_amount(0)
+            self.mv.set_speed(0)
             self.speed_label["text"] = "Status: Stopped"
+            self.turn_label["text"] = "Turn amount: 0"
             self.running = False
 
     def left(self, event):
         self.turn_label["text"] = "Turn amount: " + str(self.mv.change_turn_amount(-int(self.sensitivity.get())))
+        self.mv.apply_speeds()
 
     def right(self, event):
         self.turn_label["text"] = "Turn amount: " + str(self.mv.change_turn_amount(int(self.sensitivity.get())))
+        self.mv.apply_speeds()
 
 
 if __name__ == "__main__":
