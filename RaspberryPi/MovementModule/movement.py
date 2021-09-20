@@ -27,6 +27,10 @@ class Movement:
         self.turn_amount = turn_amount
         print(turn_amount)
 
+    def change_turn_amount(self, amount):
+        self.turn_amount += amount
+        return self.turn_amount
+
     def set_delayed_turn_amount(self, delay, turn_amount):
         """
         Apply the turn amount to the wheels after a specified delay.
@@ -47,7 +51,7 @@ class Movement:
 
         # Write the speed data to the I2C bus
         try:
-            self.bus.write_i2c_block_data(self.address, l_speed, [r_speed])
+            self.bus.write_i2c_block_data(self.address, r_speed, [l_speed])
         except OSError as e:
             print("Connection to Arduino lost:", e)
 
