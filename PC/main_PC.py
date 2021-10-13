@@ -2,6 +2,17 @@ from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 import cv2
 
+# === Delete all images from previous run ===
+import os
+import glob
+
+files = glob.glob('Images/*.jpg')
+for f in files:
+    os.remove(f)
+# ===================================
+
+TURN_AMOUNT_MULTIPLIER = 1.2
+
 cap = cv2.VideoCapture(1)
 if not cap.isOpened():
     print("Cannot open camera")
