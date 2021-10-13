@@ -111,3 +111,21 @@ _Note: The lane detection module is taking longer than I anticipated (at least t
 ### Week 9 (September 20th to September 26th)
 * Received the new four wheeled chassis.
 * Unfortunately, the Raspberry Pi malfunctioned. It doesn't boot up when provided power. Several debugging methods were suggested in https://www.raspberrypi.org/forums/viewtopic.php?t=58151. As per the link, the main indicator that there exists an issue is that the ACT LED doesn't blink upon powering. The next thing to try was to plug the power without the SD card. The ACT LED still did not blink. According to the link, this indicates an issue with the EEPROM. The solution they specified was to take a separate SD card and store the bootloader on it. Providing power after inserting this SD card should ideally cause the ACT LED to blink rapidly. However, this does not seem to occur either. The link suggests that if that is the case, the Pi is likely irrecoverable. My guess is that I burnt something important with static although I don't recall anything out of the ordinary happening. There does not seem to be any external damage to the Raspberry Pi.
+
+### Week 10 & Week 11 (September 27th to October 10th)
+* The last two weeks were quite hectic in terms of progress.
+* After looking around to find what alternatives I have to replace the Raspberry Pi, I found a method to use my mobile phone to get the camera input. Using an app called Iruin Webcam, I transmit the camera images from my phone to my laptop over Wi-fi. The received image is then processed and the wheel speeds are transmitted back to the Arduino over Bluetooth. At the Arduino, the rest of the behavior is same as the previous versions. Even though this setup has the disadvantage of network latency affecting the robot, it also has a few advantages such as:
+  * More processing power on laptop compared to Raspberry Pi.
+  * Removing the necessity of the power bank (both the Arduino and the motors can be powererd using the batteries).
+* The camera would be placed on a raised tripod at angle and height such that the lane lines are visible.
+* I started building the object detection models for vehicle detection and traffic light detection. I only collected a little data (around 50 images per class) just to get a base model working. The current dataset was captured under night time lighting so the remaining data needs to contain images captured with day time lighting.
+* Thus the past too weeks were spent mostly on building the new setup.
+* As expected, there were more challenges. After moving all the hardware onto the four wheel robot, it turns out that the robot now refuses to turn despite getting the acurate wheel speeds. This is apparently because the friction between the robot wheels and the track was too high and the wheels were unable to skid in order to make turns. My next attempt would be to move the hardware back to the initial robot but replace the motors with those that came with the new chassis.
+
+### Week 11 (In Progress)
+<img src="https://user-images.githubusercontent.com/54039395/137118534-b7c4896a-a8a0-4c87-8146-a9b66f2cefc2.jpg" width="50%"><img src="https://user-images.githubusercontent.com/54039395/137118549-389dfc0a-68f8-487e-a7cb-6fa5b40c0004.jpg" width="50%">
+
+* Tested different motors to identify a pair of motors with approximately equal speeds. A lot of the pairs have at least slight differences in rotation speed. Due to this, I decided to select two motors with approximately equal speeds and attached them to the robot. However, when the rest of the hardware were moved onto the robot, the difference in speeds seemed to become more prominent. Thus, I decided to apply the voltages to the motors with a callibration offset between the two. This means that the right motor (which in my case is the slower one) is given a higher PWM voltage compared to the left motor. While this doesn't always result in a perfect line, it mitigates the issues for the most part. The reason why it isn't too big of a problem is because the lane detection algorithm automatically changes the speeds when it goes too far off the track. However,  this results in a slightly wobbly movement for the robot (See video below).
+
+https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-a9fa-9e6196f8adfd.mp4
+
