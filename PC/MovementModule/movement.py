@@ -1,25 +1,11 @@
-import bluetooth
+import serial
 from threading import Timer
 from time import time
 
 
-def get_bd_address(bd_name):
-    print("Searching for devices...")
-    nearby_devices = bluetooth.discover_devices()
-    print("Devices found.")
-
-    for device in nearby_devices:
-        if bluetooth.lookup_name(device) == bd_name:
-            print("Bluetooth Device found!")
-            return device
-    return None
-
-
 class Movement:
-    def __init__(self, start_speed=200, turn_amount=0, bd_name='HC-05', port=1, interval=0.5):
-        self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        bd_addr = get_bd_address(bd_name)
-        self.sock.connect((bd_addr, port))
+    def __init__(self, start_speed=200, turn_amount=0, bd_name='HC-05', port=1, interval=0.5, calibration=0):
+        self.ser = serial.Serial(port='COM4', baudrate=9600, timeout=0, parity=serial.PARITY_EVEN, stopbits=1)
         self.speed = start_speed
         self.turn_amount = turn_amount
         self.interval = interval
@@ -35,7 +21,6 @@ class Movement:
     def set_turn_amount(self, turn_amount):
         """Set the turn amount"""
         self.turn_amount = turn_amount
-        print(turn_amount)
 
     def change_turn_amount(self, amount):
         self.turn_amount += amount
@@ -61,10 +46,10 @@ class Movement:
             return
         self.next_check_time = time() + self.interval
         l_speed, r_speed = self.get_speeds()
-        self.sock.send(bytes([l_speed, r_speed]))
-        self.sock.rfcomm_read_msg()
+        self.ser.write(bytes([l_speed, r_speed]))
+        print("==============================")
+        print(self.ser.read(1024).decode())
 
     def reset_speeds(self):
         """Reset the wheel speeds to 0."""
-        self.sock.send(bytes([0, 0]))
-        self.sock.close()
+        self.ser.write(bytes([0, 0]))

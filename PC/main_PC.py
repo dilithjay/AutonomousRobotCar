@@ -35,18 +35,17 @@ while True:
 
     # Lane Detection portion
     turn_amount, canny = ld.get_turn_amount(img)
-    print(turn_amount)
+    # print(turn_amount)
     cv2.imshow("canny", canny)
 
     cv2.imwrite("Images/" + str(count) + " - t_a = " + str(turn_amount) + ".jpg", canny)
     count += 1
 
-    # TODO: Adjust delay according to speed
     if turn_amount:
         mv.set_turn_amount(turn_amount)
 
     # Object Detection portion (temp)
-    mv.set_speed(120)
+    mv.set_speed(100)
 
     mv.apply_speeds()
 
