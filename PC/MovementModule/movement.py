@@ -10,11 +10,12 @@ class Movement:
         self.turn_amount = turn_amount
         self.interval = interval
         self.next_check_time = time()
+        self.calibration = calibration
 
     def get_speeds(self):
         """Calculate, clamp and return the left and right wheel speeds."""
-        l_speed = max(min(self.speed + self.turn_amount, 255), 0)
-        r_speed = max(min(self.speed - self.turn_amount, 255), 0)
+        l_speed = max(min(self.speed + self.turn_amount, 255), 0) - self.calibration
+        r_speed = max(min(self.speed - self.turn_amount, 255), 0) + self.calibration
         # print("l r =", l_speed, r_speed)
         return l_speed, r_speed
 

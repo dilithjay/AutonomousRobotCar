@@ -19,7 +19,7 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-mv = Movement()
+mv = Movement(calibration=13)
 ld = LaneDetection(crop_range_h=(.75, 1), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 count = 0
 
@@ -42,7 +42,7 @@ while True:
     count += 1
 
     if turn_amount:
-        mv.set_turn_amount(turn_amount)
+        mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
 
     # Object Detection portion (temp)
     mv.set_speed(100)
