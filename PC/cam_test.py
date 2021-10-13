@@ -13,6 +13,8 @@ while True:
     ret, frame = cap.read()
 
     frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+    # h, w = frame.shape[:2]
+    # frame = frame[int(h * 0.75):, :]
 
     # if frame is read correctly ret is True
     if not ret:

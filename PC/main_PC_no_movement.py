@@ -1,11 +1,9 @@
-from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 import cv2
 
 
 # Initialize module objects
-mv = Movement()
-ld = LaneDetection(crop_range_h=(.7, 1), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
+ld = LaneDetection(crop_range_h=(.7, 1), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
 
 cap = cv2.VideoCapture(1)
 # count = 0
@@ -24,6 +22,5 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-mv.reset_speeds()
 cap.release()
 cv2.destroyAllWindows()

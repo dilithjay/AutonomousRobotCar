@@ -13,7 +13,7 @@ class LaneDetectionHandlerType(Enum):
 
 class LaneDetection:
     def __init__(self, calibration=0, crop_range_w=(0.2, 0.8), crop_range_h=(0.5, 1), blur_kernel_size=(3, 3),
-                 canny_threshold_range=(30, 90), row_count=5, method=LaneDetectionHandlerType.ONE_ROW):
+                 canny_threshold_range=(30, 90), row_count=20, method=LaneDetectionHandlerType.ONE_ROW):
         """
         Initialize the Lane Detection module.
 
@@ -30,7 +30,7 @@ class LaneDetection:
         self.crop_range_h = crop_range_h
         self.kernel_size = blur_kernel_size
         self.low_threshold, self.high_threshold = canny_threshold_range
-        self.row_count = 20
+        self.row_count = row_count
         self.method = method
 
         self.correct_fraction = 0.4
@@ -101,8 +101,8 @@ class LaneDetection:
                 l, r = self.get_speed_fractions_one_row(canny, w, h - i)
                 left += l
                 right += r
-            left /= h/15
-            right /= h/15
+            left /= h / 15
+            right /= h / 15
 
         return left, right, canny
 
@@ -143,7 +143,7 @@ class LaneDetection:
                 right = i
             if found_l and found_r:
                 break
-        return left/max_pixels, right/max_pixels
+        return left / max_pixels, right / max_pixels
 
     def get_turn_amount(self, image):
         """

@@ -42,10 +42,14 @@ void loop() {
 
   if (Serial.available() == 2){
     left_speed = Serial.read();
-    setLeftSpeed(left_speed);
     right_speed = Serial.read();
-    setRightSpeed(right_speed);
+    Serial.print("Left Speed: ");
+    Serial.println(left_speed);
+    Serial.print("Right Speed: ");
+    Serial.println(right_speed);
   }
+  setLeftSpeed(left_speed);
+  setRightSpeed(right_speed);
 }
 
 void stop_and_wait(int millisecs){
@@ -55,16 +59,12 @@ void stop_and_wait(int millisecs){
 }
 
 void setLeftSpeed(byte num){
-  Serial.print("Left Speed: ");
-  Serial.println(num);
   analogWrite(enB, num);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
 }
 
 void setRightSpeed(byte num){
-  Serial.print("Right Speed: ");
-  Serial.println(num);
   analogWrite(enA, num);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
