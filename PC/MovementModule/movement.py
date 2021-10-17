@@ -4,7 +4,7 @@ from time import time
 
 
 class Movement:
-    def __init__(self, start_speed=200, turn_amount=0, bd_name='HC-05', port=1, interval=0.5, calibration=0):
+    def __init__(self, start_speed=200, turn_amount=0, interval=0.5, calibration=0):
         self.ser = serial.Serial(port='COM4', baudrate=9600, timeout=0, parity=serial.PARITY_EVEN, stopbits=1)
         self.speed = start_speed
         self.turn_amount = turn_amount
