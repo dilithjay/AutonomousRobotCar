@@ -3,7 +3,7 @@ import cv2
 
 
 # Initialize module objects
-ld = LaneDetection(crop_range_h=(.7, 1), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
+ld = LaneDetection(crop_range_h=(.8, .9), crop_range_w=(0, 1), method=LaneDetectionHandlerType.LINE_PREDICT)
 
 cap = cv2.VideoCapture(1)
 # count = 0
