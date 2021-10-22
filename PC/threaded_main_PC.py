@@ -1,9 +1,10 @@
-from MovementModule.movement import Movement
+# from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 from ObjectDetectionModule.object_detection import ObjectDetection
 from ObjectDetectionModule.od_handlers import ODHandlerType
 
 import cv2
+import threading
 
 # === Delete all images from previous run ===
 import os
@@ -22,11 +23,23 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-mv = Movement(calibration=10)
+# mv = Movement(calibration=10)
 ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
 
 count = 0
+canny = None
+
+
+def detect_lanes_and_apply_speed():
+    global canny
+    turn_amount, canny = ld.get_turn_amount(img)
+    if turn_amount:
+        turn_amount = min(40, max(-40, turn_amount))
+        print(turn_amount)
+        # mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
+    # mv.apply_speeds()
+
 
 while True:
     ret, img = cap.read()
@@ -39,26 +52,19 @@ while True:
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
     # Lane Detection portion
-    turn_amount, canny = ld.get_turn_amount(img)
-    # print(turn_amount)
-    cv2.imshow("canny", canny)
-
-    cv2.imwrite("Images/" + str(count) + " - t_a = " + str(turn_amount) + ".jpg", canny)
-    count += 1
-
-    if turn_amount:
-        turn_amount = min(40, max(-40, turn_amount))
-        mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
+    lane_det_thread = threading.Thread(target=detect_lanes_and_apply_speed)
+    lane_det_thread.start()
+    if canny is not None:
+        cv2.imshow("canny", canny)
 
     # Object Detection portion
     multiplier, det_img = od.get_speed_multiplier(img, True)
-    mv.set_speed(100 * multiplier)
-
-    mv.apply_speeds()
+    # mv.set_speed(100 * multiplier)
+    # mv.apply_speeds()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-mv.reset_speeds()
+# mv.reset_speeds()
 cap.release()
 cv2.destroyAllWindows()

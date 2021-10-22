@@ -122,10 +122,27 @@ _Note: The lane detection module is taking longer than I anticipated (at least t
 * Thus the past too weeks were spent mostly on building the new setup.
 * As expected, there were more challenges. After moving all the hardware onto the four wheel robot, it turns out that the robot now refuses to turn despite getting the acurate wheel speeds. This is apparently because the friction between the robot wheels and the track was too high and the wheels were unable to skid in order to make turns. My next attempt would be to move the hardware back to the initial robot but replace the motors with those that came with the new chassis.
 
-### Week 11 (In Progress)
+### Week 12 (October 11th to October 17th)
 <img src="https://user-images.githubusercontent.com/54039395/137118534-b7c4896a-a8a0-4c87-8146-a9b66f2cefc2.jpg" width="50%"><img src="https://user-images.githubusercontent.com/54039395/137118549-389dfc0a-68f8-487e-a7cb-6fa5b40c0004.jpg" width="50%">
 
 * Tested different motors to identify a pair of motors with approximately equal speeds. A lot of the pairs have at least slight differences in rotation speed. Due to this, I decided to select two motors with approximately equal speeds and attached them to the robot. However, when the rest of the hardware were moved onto the robot, the difference in speeds seemed to become more prominent. Thus, I decided to apply the voltages to the motors with a callibration offset between the two. This means that the right motor (which in my case is the slower one) is given a higher PWM voltage compared to the left motor. While this doesn't always result in a perfect line, it mitigates the issues for the most part. The reason why it isn't too big of a problem is because the lane detection algorithm automatically changes the speeds when it goes too far off the track. However,  this results in a slightly wobbly movement for the robot (See video below).
 
 https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-a9fa-9e6196f8adfd.mp4
 
+* Tried using Hough Lines in a different way:
+  * Initial method: Find lines of left and right halves separately. Didn't work well when the road was too curved (curves aren't detected by Hough Lines method).
+  * New method: Use the gradient of all lines to determine the turn amount (`= Mean gradient of positive gradients - Mean gradient of negative gradients`). This performed better than the initial method but turned out to be too sensitive false positive line detections. Thus, the `MANY_ROWS` method continues to be the better algorithm for this.
+
+### Week 13 (October 18th to October 25th) (In progress)
+* Ordered LM393 Infrared Speed Sensor modules (yet to receive).
+* Started working on the object detection module with the new system. Collected 65 images taken with objects at random locations, most of which have objects of 3 classes (4 classes in total: pedestrian, vehicle, red traffic light, green traffic light). The amount of data won't be sufficient for the final model but it's a sufficient baseline to work upwards from.
+![image](https://user-images.githubusercontent.com/54039395/138223129-9bca9ab6-b9e5-47c0-bcd1-fd5e19118f96.png)
+* Trained a model with the `ssd_resnet50_v1_fpn` model architecture using the Tensorflow Object Detection API. This uses the pretrained model `ssd_resnet50_v1_fpn_640x640_coco17` which is trained on the COCO dataset. A concept known as transfer learning is used where weights of an already trained network are used to initialize the new network. This results in much faster training with much less data.
+* After training, it was noticed that the object detector had trouble with detecting traffic lights. Possible reason may include:
+  * The base of the traffic light is black while the background of the track is also black.
+  * The light from the LEDs are overexposed, resulting in them to look white, regardless of color.
+  * Since only the enabled light was labelled, it may have been more difficult for the model.
+* As a solution, a paper was placed on the traffic lights to prevent excess light.
+* Vehicles and pedestrians were detected as expected. However, these detections were a bit sensitive to light as well (this too is expected considering the lack of data).
+
+![detection_1](https://user-images.githubusercontent.com/54039395/138226316-3d5bf640-7105-4158-a3e5-f52724b63d02.JPG)
