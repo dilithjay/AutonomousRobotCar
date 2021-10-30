@@ -158,3 +158,6 @@ https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-
   * **Batch size**: 16
   * **Data augmentation**: Random Cropping, Random Horizontal Flip
   * **Optimizer**: Adam Optimizer
+* The performance of this model was quite good. The model was able to consistently detect vehicles and pedestrians with 100% confidence. While there are a few false positives, these can be easily filtered out using a class specific threshold. However, the model seemed to lack confidence about traffic light detections. Despite this, the model does seem to make the detections consistently. Thus, similar to vehicles and pedestrians, a class-specific threshold would assist in filtering out the false positives.
+* Started working integrating the speed encoders into the hardware.
+  * It was noticed that `pin 10`, which was used as the `ENABLE A` line for the L298N motor driver, didn't work with PWM even though it was specified as one. Turns out that this is caused by the `TimerOne library` which was used to create interrupts at regular periods. Simply switching with `pin 11` (which was intially connected to an ultrasonic sensor) of the arduino fixed the issue.
