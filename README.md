@@ -165,3 +165,16 @@ https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-
 <img src="https://user-images.githubusercontent.com/54039395/139533885-29be5e92-0c49-4423-9654-1dcd4633f881.JPG" width="50%"><img src="https://user-images.githubusercontent.com/54039395/139533889-e16d2eae-8aae-492d-8248-a85fb35b215f.JPG" width="50%">
 * Started working integrating the speed encoders into the hardware.
   * It was noticed that `pin 10`, which was used as the `ENABLE A` line for the L298N motor driver, didn't work with PWM even though it was specified as one. Turns out that this is caused by the `TimerOne library` which was used to create interrupts at regular periods. Simply switching with `pin 11` (which was intially connected to an ultrasonic sensor) of the arduino fixed the issue.
+
+### Week 15 & Week 16 (November 1st to November 14th)
+* Week 15 was spent on preparing and improving the presentation for evaluation.
+* The following tips were received at evaluation:
+  * Use a feedback control loop to adjust wheel speeds.
+  * Use a curve fitting algorithm in polar coordinates to for lane detection and trajectory prediction.
+* Week 16 (in progress) is being spent on developing the algorithm for speed control using encoder sensors.
+  * Implemented PID control using the AutoPID Arduino library. Requires references to 3 variables:
+    * `Input`: The current RPM
+    * `SetPoint`: The required RPM
+    * `Output`: The value of PWM signal (can be clamped between `0` and `255`)
+  * The Kp, Ki, and Kd values are yet to be fine tuned by testing.
+  * The function for the conversion from provided PWM signal to the required RPM (`Input`) should also be fine tuned based on the max speed achieved during the robots movement.
