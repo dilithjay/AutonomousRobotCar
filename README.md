@@ -172,9 +172,9 @@ https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-
   * Use a feedback control loop to adjust wheel speeds.
   * Use a curve fitting algorithm in polar coordinates to for lane detection and trajectory prediction.
 * Week 16 (in progress) is being spent on developing the algorithm for speed control using encoder sensors.
-  * Implemented PID control using the AutoPID Arduino library. Requires references to 3 variables:
+  * Implemented PID control using the `AutoPID` Arduino library. Requires references to 3 variables:
     * `Input`: The current RPM
     * `SetPoint`: The required RPM
     * `Output`: The value of PWM signal (can be clamped between `0` and `255`)
-  * The Kp, Ki, and Kd values are yet to be fine tuned by testing.
+  * The `Kp`, `Ki`, and `Kd` values are yet to be fine tuned by testing.
   * The function for the conversion from provided PWM signal to the required RPM (`Input`) should also be fine tuned based on the max speed achieved during the robots movement.
