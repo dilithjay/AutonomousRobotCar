@@ -133,16 +133,48 @@ https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-
   * Initial method: Find lines of left and right halves separately. Didn't work well when the road was too curved (curves aren't detected by Hough Lines method).
   * New method: Use the gradient of all lines to determine the turn amount (`= Mean gradient of positive gradients - Mean gradient of negative gradients`). This performed better than the initial method but turned out to be too sensitive false positive line detections. Thus, the `MANY_ROWS` method continues to be the better algorithm for this.
 
-### Week 13 (October 18th to October 25th) (In progress)
+### Week 13 (October 18th to October 24th)
 * Ordered LM393 Infrared Speed Sensor modules (yet to receive).
 * Started working on the object detection module with the new system. Collected 65 images taken with objects at random locations, most of which have objects of 3 classes (4 classes in total: pedestrian, vehicle, red traffic light, green traffic light). The amount of data won't be sufficient for the final model but it's a sufficient baseline to work upwards from.
 ![image](https://user-images.githubusercontent.com/54039395/138223129-9bca9ab6-b9e5-47c0-bcd1-fd5e19118f96.png)
-* Trained a model with the `ssd_resnet50_v1_fpn` model architecture using the Tensorflow Object Detection API. This uses the pretrained model `ssd_resnet50_v1_fpn_640x640_coco17` which is trained on the COCO dataset. A concept known as transfer learning is used where weights of an already trained network are used to initialize the new network. This results in much faster training with much less data.
+* Trained a model with the `ssd_resnet50_v1_fpn` model architecture using the Tensorflow Object Detection API. This uses the pretrained model `ssd_resnet50_v1_fpn_640x640_coco17` which is trained on the COCO dataset. A concept known as transfer learning is used where weights of an already trained network are used to initialize the new network. This results in much faster training with much less data. The configuration for the model were as follows:
+  * **Batch size**: 8
+  * **Data augmentation**: Random Cropping, Random Horizontal Flip
+  * **Optimizer**: Gradient Descent with Momentum
 * After training, it was noticed that the object detector had trouble with detecting traffic lights. Possible reason may include:
   * The base of the traffic light is black while the background of the track is also black.
   * The light from the LEDs are overexposed, resulting in them to look white, regardless of color.
   * Since only the enabled light was labelled, it may have been more difficult for the model.
 * As a solution, a paper was placed on the traffic lights to prevent excess light.
-* Vehicles and pedestrians were detected as expected. However, these detections were a bit sensitive to light as well (this too is expected considering the lack of data).
+* Vehicles and pedestrians were detected but these weren't consistent. The detector was highly biased towards pedestrians and was highly sensitive to light as well (this too is expected considering the lack of data).
 
 ![detection_1](https://user-images.githubusercontent.com/54039395/138226316-3d5bf640-7105-4158-a3e5-f52724b63d02.JPG)
+* Implemented the logic for the object detection handlers:
+  * For **Pedestrians and Vehicles**: The speed was multiplied by a value inversely proportional to the distance from 70% of the image. Any position higher than 70% of the image would stop the robot. The threshold of 70% is an arbitrary number that could be tuned during testing.
+  * For **Traffic Lights**: If a traffic light was detected below 50% of the image, the robot would stop and begin looking for a green light in the bottom region.
+
+### Week 14 (October 25th to October 31st)
+* Trained a new model with the `efficientdet_d0` model architecture in the same method as previously mentioned. Configuration is as follows:
+  * **Batch size**: 16
+  * **Data augmentation**: Random Cropping, Random Horizontal Flip
+  * **Optimizer**: Adam Optimizer
+* The performance of this model was quite good. The model was able to consistently detect vehicles and pedestrians with 100% confidence. While there are a few false positives, these can be easily filtered out using a class specific threshold. However, the model seemed to lack confidence about traffic light detections (3% to 10% confidence).
+* Changed the traffic light to be on a white box instead of black, collected new data and retrained the model that used the weights of the previous model to initialize itself.
+* The resulting model performed just as well as the previous model on vehicles and pedestrians. However, the confidence on traffic light detections were still quite low, albeit much higher than what it was previously (20% - 40% for red lights and 30% - 60% for green lights). Despite the low confidence, the model does seem to make the detections consistently. Thus, similar to vehicles and pedestrians, a class-specific threshold would assist in filtering out the false positives.
+
+<img src="https://user-images.githubusercontent.com/54039395/139533885-29be5e92-0c49-4423-9654-1dcd4633f881.JPG" width="50%"><img src="https://user-images.githubusercontent.com/54039395/139533889-e16d2eae-8aae-492d-8248-a85fb35b215f.JPG" width="50%">
+* Started working integrating the speed encoders into the hardware.
+  * It was noticed that `pin 10`, which was used as the `ENABLE A` line for the L298N motor driver, didn't work with PWM even though it was specified as one. Turns out that this is caused by the `TimerOne library` which was used to create interrupts at regular periods. Simply switching with `pin 11` (which was intially connected to an ultrasonic sensor) of the arduino fixed the issue.
+
+### Week 15 & Week 16 (November 1st to November 14th)
+* Week 15 was spent on preparing and improving the presentation for evaluation.
+* The following tips were received at evaluation:
+  * Use a feedback control loop to adjust wheel speeds.
+  * Use a curve fitting algorithm in polar coordinates to for lane detection and trajectory prediction.
+* Week 16 (in progress) is being spent on developing the algorithm for speed control using encoder sensors.
+  * Implemented PID control using the `AutoPID` Arduino library. Requires references to 3 variables:
+    * `Input`: The current RPM
+    * `SetPoint`: The required RPM
+    * `Output`: The value of PWM signal (can be clamped between `0` and `255`)
+  * The `Kp`, `Ki`, and `Kd` values are yet to be fine tuned by testing.
+  * The function for the conversion from provided PWM signal to the required RPM (`Input`) should also be fine tuned based on the max speed achieved during the robots movement.
