@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import tensorflow as tf
+from time import time
 
 from tf_utils import ops as utils_ops
 from tf_utils import label_map_util
@@ -44,6 +45,7 @@ def run_inference_for_single_image(model, image):
 
 def run_inference(model):
     while cap.isOpened():
+        t = time()
         ret, img = cap.read()
         image_np = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
         # Actual detection.
@@ -58,17 +60,19 @@ def run_inference(model):
             category_index,
             instance_masks=output_dict.get('detection_masks_reframed', None),
             use_normalized_coordinates=True,
-            line_thickness=8)
+            line_thickness=8,
+            min_score_thresh=0.15)
         cv2.imshow('object_detection', image_np)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cap.release()
             cv2.destroyAllWindows()
             break
+        print(round(1/(time() - t), 2), "FPS")
 
 
 category_index = label_map_util.create_category_index_from_labelmap('label_map.pbtxt', use_display_name=True)
 print(category_index)
-model_dir = 'models/my_model/saved_model'
+model_dir = 'models/my_model_5/saved_model'
 detection_model = tf.saved_model.load(str(model_dir))
 cap = cv2.VideoCapture(1)
 run_inference(detection_model)
