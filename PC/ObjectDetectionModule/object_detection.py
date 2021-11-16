@@ -10,7 +10,7 @@ from PC.ObjectDetectionModule.tf_utils import visualization_utils as vis_util
 
 
 class ObjectDetection:
-    def __init__(self, handler_types: set, threshold=0.5):
+    def __init__(self, handler_types: set):
         self.handlers = {}
         for handler in handler_types:
             if handler == ODHandlerType.PEDESTRIAN:
@@ -20,7 +20,6 @@ class ObjectDetection:
             else:   # handler == ODHandlerType.TRAFFIC_LIGHT:
                 self.handlers[handler] = TrafficLightODHandler()
 
-        self.threshold = threshold
         model_dir = 'ObjectDetectionModule/models/my_model/saved_model'
         self.model = tf.saved_model.load(str(model_dir))
         self.class_index = label_map_util.create_category_index_from_labelmap('ObjectDetectionModule/label_map.pbtxt',
@@ -82,14 +81,15 @@ class ObjectDetection:
 
     def get_filtered_output_dict(self, output_dict):
         num_detections = output_dict['num_detections']
+        per_class_threshold = {"vehicle": 0.9, "pedestrian": 0.9, "light_red": 0.3, "light_green": 0.4}
 
         new_dict = {}
         for index in self.class_index:
             new_dict[self.class_index[index]['name']] = []
 
         for i in range(num_detections):
-            if output_dict['detection_scores'][i] > self.threshold:
-                class_name = self.class_index[output_dict['detection_classes'][i]]['name']
+            class_name = self.class_index[output_dict['detection_classes'][i]]['name']
+            if output_dict['detection_scores'][i] > per_class_threshold[class_name]:
                 print(class_name)
                 new_dict[class_name].append(output_dict['detection_boxes'][i])
         return new_dict
