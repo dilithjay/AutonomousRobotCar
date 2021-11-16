@@ -6,11 +6,15 @@ print("Connected")
 size = 1024
 
 while True:
-    serial_port.write(bytes(list(map(int, input().split()))))
-    sleep(.05)
+    inp = input(": ")
+    if inp.lower() == 'q':
+        break
+    serial_port.write(bytes(list(map(int, inp.split()))))
+    sleep(.1)
     data = serial_port.read(size).decode('ascii')
     while not data:
         data = serial_port.read(size).decode('ascii')
-    sleep(.01)
+    sleep(.1)
     if data:
         print(data)
+serial_port.write(bytes([0, 0]))

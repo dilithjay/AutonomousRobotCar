@@ -1,15 +1,15 @@
 // L298N motor driver control pins
-#define enA 9
-#define in1 8
-#define in2 7
-#define in3 5
-#define in4 4
-#define enB 3
+const byte enA = 11;
+const byte in1 = 9;
+const byte in2 = 8;
+const byte in3 = 7;
+const byte in4 = 6;
+const byte enB = 5;
 
 // Ultrasonic Sensor Pins (3-wire mode)
-#define uss_left 12
-#define uss_mid 11
-#define uss_right 2
+const byte uss_left = 12;
+const byte uss_mid = 10;
+const byte uss_right = 4;
 
 byte left_speed, right_speed;
 bool speed_received = false;
@@ -43,9 +43,9 @@ void loop() {
   if (Serial.available() == 2){
     left_speed = Serial.read();
     right_speed = Serial.read();
-    Serial.print("Left Speed: ");
+    Serial.print("L: ");
     Serial.println(left_speed);
-    Serial.print("Right Speed: ");
+    Serial.print("R: ");
     Serial.println(right_speed);
   }
   setLeftSpeed(left_speed);

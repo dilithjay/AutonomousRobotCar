@@ -80,10 +80,7 @@ void loop() {
   if (Serial.available() == 2){
     left_speed = Serial.read();
     right_speed = Serial.read();
-    Serial.print("Left Speed: ");
-    Serial.println(left_speed);
-    Serial.print("Right Speed: ");
-    Serial.println(right_speed);
+    // print_speeds();
     print_RPMs();
   }
   setLeftSpeed(left_speed);
@@ -121,10 +118,16 @@ int getUltrasonicDistance(int pin) {
 }
 
 void print_RPMs() {
-  Serial.print("Motor Speed 1: ");
+  Serial.print("M1: ");
   Serial.print(rpm_A);
-  Serial.print(" RPM - ");
-  Serial.print("Motor Speed 2: ");
-  Serial.print(rpm_B);
-  Serial.println(" RPM");
+  Serial.print(" - ");
+  Serial.print("M2: ");
+  Serial.println(rpm_B);
+}
+
+void print_speeds(){
+  Serial.print("L: ");
+  Serial.print(left_speed);
+  Serial.print(", R: ");
+  Serial.println(right_speed);
 }
