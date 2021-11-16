@@ -61,7 +61,7 @@ def run_inference(model):
             instance_masks=output_dict.get('detection_masks_reframed', None),
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.15)
+            min_score_thresh=0.5)
         cv2.imshow('object_detection', image_np)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cap.release()

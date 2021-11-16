@@ -15,13 +15,13 @@ def get_canny(image):
     return canny
 
 
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(1)
 
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
 
-count = 40
+count = 0
 
 while True:
     # Capture frame-by-frame
@@ -41,7 +41,8 @@ while True:
     cv2.imshow('original', image)
     # sleep(0.5)
     if cv2.waitKey(1) == ord('c'):
-        cv2.imwrite('Images/' + str(count) + '.jpg', frame)
+        # cv2.imwrite('Images/' + str(count) + '.jpg', frame)
+        cv2.imwrite('D:/AutonomousRobotCar/PC/LaneDetectionModule/images/' + str(count) + '.jpg', image)
         print("Image saved:", str(count) + '.jpg')
         count += 1
     if cv2.waitKey(1) == ord('q'):

@@ -1,4 +1,4 @@
-# from MovementModule.movement import Movement
+from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 from ObjectDetectionModule.object_detection import ObjectDetection
 from ObjectDetectionModule.od_handlers import ODHandlerType
@@ -23,7 +23,7 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-# mv = Movement(calibration=10)
+mv = Movement(calibration=10)
 ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
 
@@ -48,8 +48,8 @@ while True:
         print("cam not found")
         continue
 
-    cv2.imshow('original', img)
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+    cv2.imshow('original', img)
 
     # Lane Detection portion
     lane_det_thread = threading.Thread(target=detect_lanes_and_apply_speed)
@@ -59,8 +59,9 @@ while True:
 
     # Object Detection portion
     multiplier, det_img = od.get_speed_multiplier(img, True)
-    # mv.set_speed(100 * multiplier)
-    # mv.apply_speeds()
+    mv.set_speed(100 * multiplier)
+    mv.apply_speeds()
+    cv2.imshow("canny", det_img)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
