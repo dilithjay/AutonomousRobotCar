@@ -21,13 +21,13 @@ float rpm_A = 0.0f, rpm_B = 0.0f;
 
 // Variables for byte to rpm mapping
 const float min_byte = 70, max_byte = 255;
-const float max_rpm = 700, min_rpm = 300;
+const float max_rpm = 250, min_rpm = 100;
 
 byte left_speed, right_speed;
 bool speed_received = false;
 
 // Variables for PID control
-const double KP = 2, KI = 10, KD = 1;
+const double KP = .01, KI = .4, KD = 1;
 double input_A, output_A, target_A = 0;
 double input_B, output_B, target_B = 0;
 AutoPID pid_A(&input_A, &target_A, &output_A, 0, 255, KP, KI, KD);
@@ -59,7 +59,7 @@ void ISR_timerone()
   //print_RPMs();
   input_A = (double) rpm_A;
   input_B = (double) rpm_B;
-  print_PID_values();
+  // print_PID_values();
   Timer1.attachInterrupt( ISR_timerone );
 }
 
@@ -97,12 +97,12 @@ void loop() {
 
 
   if (Serial.available() == 2){
-    left_speed = Serial.read();
-    right_speed = Serial.read();
-    target_A = get_rpm_from_byte(left_speed);
-    target_B = get_rpm_from_byte(right_speed);
-    Serial.println("-----------Received-----------");
-    print_speeds();
+    target_A = get_rpm_from_byte(Serial.read());
+    target_B = get_rpm_from_byte(Serial.read());
+    //Serial.println("-----------Received-----------");
+    print_targets();
+    print_targets();
+    print_RPMs();
   }
   
   pid_A.run();
@@ -110,6 +110,9 @@ void loop() {
   
   left_speed = (byte) output_A;
   right_speed = (byte) output_B;
+  //print_speeds();
+    //print_targets();
+    //print_RPMs();
   
   setLeftSpeed(left_speed);
   setRightSpeed(right_speed);
@@ -118,6 +121,8 @@ void loop() {
 }
 
 double get_rpm_from_byte(byte num){
+  if (num < min_byte)
+    return 0.0;
   return (num - min_byte) / (max_byte - min_byte) * (max_rpm - min_rpm) + min_rpm;
 }
 
@@ -152,12 +157,10 @@ int getUltrasonicDistance(int pin) {
 }
 
 void print_RPMs() {
-  Serial.print("Motor Speed 1: ");
+  Serial.print("M1: ");
   Serial.print(rpm_A);
-  Serial.print(" RPM - ");
-  Serial.print("Motor Speed 2: ");
-  Serial.print(rpm_B);
-  Serial.println(" RPM");
+  Serial.print(", M2: ");
+  Serial.println(rpm_B);
 }
 
 void print_PID_values(){
@@ -170,8 +173,15 @@ void print_PID_values(){
 }
 
 void print_speeds(){
-  Serial.print("Left Speed: ");
+  Serial.print("L: ");
   Serial.print(left_speed);
-  Serial.print(", Right Speed: ");
+  Serial.print(", R: ");
   Serial.println(right_speed);
+}
+
+void print_targets(){
+  Serial.print("t1: ");
+  Serial.print(target_A);
+  Serial.print(", t2: ");
+  Serial.println(target_B);
 }
