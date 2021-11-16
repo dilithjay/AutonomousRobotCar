@@ -1,15 +1,21 @@
+import math
+
 import cv2
 import numpy as np
 from enum import Enum
 from math import atan2, pi
 
 AVG_GRAD = 2
+VERY_LARGE_NUM = 1e9
+MAX_FRACTION = 0.8
+MIN_FRACTION = 0
 
 
 class LaneDetectionHandlerType(Enum):
     ONE_ROW = 1
     MANY_ROWS = 2
     LINE_PREDICT = 3
+    HYBRID = 4
 
 
 class LaneDetection:
@@ -33,6 +39,10 @@ class LaneDetection:
         self.low_threshold, self.high_threshold = canny_threshold_range
         self.row_count = row_count
         self.method = method
+
+        self.hl_max_gap = 3
+        self.hl_threshold = 20
+        self.hl_min_len = 30
 
         self.correct_fraction = 0.4
 
@@ -89,62 +99,62 @@ class LaneDetection:
         if self.method == LaneDetectionHandlerType.ONE_ROW:
             left, right = self.get_speed_fractions_one_row(canny, w, h)
         elif self.method == LaneDetectionHandlerType.LINE_PREDICT:
-            # left, right = self.get_speed_fractions_line_predict(canny, w, h)
-            # Temp: Added to see lines when debugging
-            lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 25, minLineLength=5, maxLineGap=50)
-            if lines is not None:
-                l_angle, r_angle = 1.35, 1.35
-                l_count, r_count = 1, 1
-                for line in lines:
-                    x1, y1, x2, y2 = line[0]
-                    y_diff, x_diff = y2 - y1, x2 - x1
-                    if (y_diff < 0) != (x_diff < 0):
-                        # angle = atan2(-y_diff, x_diff)/pi * 180
-                        # print("R:", angle)
-                        r_angle += pi - atan2(-y_diff, x_diff)
-                        r_count += 1
-                    else:
-                        # angle = atan2(y_diff, x_diff)/pi * 180
-                        # print("L:", angle)
-                        l_angle += pi - atan2(y_diff, x_diff)
-                        l_count += 1
-                    # cv2.line(canny, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
-                l_angle_avg = l_angle / l_count
-                r_angle_avg = r_angle / r_count
-                left = r_angle_avg / (l_angle_avg + r_angle_avg) * 1.5
-                right = l_angle_avg / (l_angle_avg + r_angle_avg) * 1.5
+            left, right = self.get_speed_fractions_line_predict(canny, left, right)
 
         elif self.method == LaneDetectionHandlerType.MANY_ROWS:
-            for i in range(0, h, 15):
-                l, r = self.get_speed_fractions_one_row(canny, w, h - i)
-                left += l
-                right += r
-            left /= h / 15
-            right /= h / 15
+            left, right = self.get_speed_fractions_many_rows(canny, w, h)
+        elif self.method == LaneDetectionHandlerType.HYBRID:
+            left, right = self.get_speed_fractions_hybrid(canny, w, h)
 
         return left, right, canny
 
-    def get_speed_fractions_line_predict(self, canny, w, h):
-        left, right = 0, 0
-        left_img, right_img = canny[:, :w // 2 - self.calibration], canny[:, w // 2 - self.calibration:]
-        left_lines = cv2.HoughLinesP(left_img, 1, np.pi / 180, 100, minLineLength=h, maxLineGap=50)
-        right_lines = cv2.HoughLinesP(right_img, 1, np.pi / 180, 100, minLineLength=h, maxLineGap=50)
-
-        if left_lines is not None:
-            left = self.get_fraction_using_line_grads(left_lines)
-        if right_lines is not None:
-            right = self.get_fraction_using_line_grads(right_lines)
+    def get_speed_fractions_line_predict(self, canny, left, right):
+        lines = cv2.HoughLinesP(canny, 1, np.pi / 180, self.hl_threshold,
+                                minLineLength=self.hl_min_len, maxLineGap=self.hl_max_gap)
+        if lines is not None:
+            l_angle, r_angle = 1.35, 1.35
+            l_count, r_count = 1, 1
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                y_diff, x_diff = y2 - y1, x2 - x1
+                if (y_diff < 0) != (x_diff < 0):
+                    r_angle += pi - atan2(-y_diff, x_diff)
+                    r_count += 1
+                else:
+                    l_angle += pi - atan2(y_diff, x_diff)
+                    l_count += 1
+                cv2.line(canny, (x1, y1), (x2, y2), (0, 255, 0), thickness=2, lineType=8)
+            l_angle_avg = l_angle / l_count
+            r_angle_avg = r_angle / r_count
+            left = r_angle_avg / (l_angle_avg + r_angle_avg) * 1.5
+            right = l_angle_avg / (l_angle_avg + r_angle_avg) * 1.5
         return left, right
 
-    @staticmethod
-    def get_fraction_using_line_grads(lines):
-        avg_grad = 0
-        for line in lines:
-            x1, y1, x2, y2 = line[0]
-            avg_grad += abs((y2 - y1) / (x2 - x1))
-        avg_grad /= len(lines)
-        fraction = 1 - avg_grad / AVG_GRAD
-        return fraction
+    def get_speed_fractions_many_rows(self, canny, w, h):
+        left, right = 0, 0
+        for i in range(0, h, 15):
+            l, r = self.get_speed_fractions_one_row(canny, w, h - i)
+            left += l
+            right += r
+        left /= h / 15
+        right /= h / 15
+        return left, right
+
+    def get_speed_fractions_hybrid(self, canny, w, h):
+        # Find all straight lines. If there are 2 lines and their angles are approximately equal,
+        # confirm that they are near the center, and get the respective distance from the respective ends.
+        max_pixels = w // 2 - self.calibration
+        lines = cv2.HoughLinesP(canny, 1, np.pi / 180, self.hl_threshold,
+                                minLineLength=self.hl_min_len, maxLineGap=self.hl_max_gap)
+        if lines is not None and len(lines) > 0:
+            x1, y1, x2, y2 = lines[0][0]
+            pos_angle = (y2 - y1 <= 0) == (x2 - x1 >= 0)
+            if pos_angle and max_pixels - (x1 + x2) / 2 < max_pixels // 4:
+                return MAX_FRACTION, MIN_FRACTION
+            elif not pos_angle and (x1 + x2) / 2 - max_pixels < max_pixels // 4:
+                return MIN_FRACTION, MAX_FRACTION
+
+        return self.get_speed_fractions_many_rows(canny, w, h)
 
     def get_speed_fractions_one_row(self, canny, w, row):
         max_pixels = w // 2 - self.calibration
@@ -185,3 +195,15 @@ class LaneDetection:
         # print(turn_amount)
 
         return turn_amount, canny
+
+
+def get_line_grad(line):
+    x1, y1, x2, y2 = line
+    if x2 == x1:
+        return VERY_LARGE_NUM
+    return abs((y2 - y1) / (x2 - x1))
+
+
+def get_line_angle(line):
+    x1, y1, x2, y2 = line
+    return math.atan2(y2 - y1, x2 - x1)

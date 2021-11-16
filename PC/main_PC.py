@@ -14,7 +14,7 @@ for f in files:
     os.remove(f)
 # ===================================
 
-TURN_AMOUNT_MULTIPLIER = 1.2
+TURN_AMOUNT_MULTIPLIER = .8
 
 cap = cv2.VideoCapture(1)
 if not cap.isOpened():
@@ -23,7 +23,7 @@ if not cap.isOpened():
 
 # Initialize module objects
 mv = Movement(calibration=10)
-ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
+ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.HYBRID)
 od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
 
 count = 0
@@ -35,12 +35,12 @@ while True:
         print("cam not found")
         continue
 
-    cv2.imshow('original', img)
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+    cv2.imshow('original', img)
 
     # Lane Detection portion
     turn_amount, canny = ld.get_turn_amount(img)
-    # print(turn_amount)
+    print(turn_amount)
     cv2.imshow("canny", canny)
 
     cv2.imwrite("Images/" + str(count) + " - t_a = " + str(turn_amount) + ".jpg", canny)
@@ -55,6 +55,7 @@ while True:
     mv.set_speed(100 * multiplier)
 
     mv.apply_speeds()
+    cv2.imshow("detected", det_img)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
