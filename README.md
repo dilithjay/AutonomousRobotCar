@@ -178,3 +178,23 @@ https://user-images.githubusercontent.com/54039395/137106984-d5e7ed52-92a6-490a-
     * `Output`: The value of PWM signal (can be clamped between `0` and `255`)
   * The `Kp`, `Ki`, and `Kd` values are yet to be fine tuned by testing.
   * The function for the conversion from provided PWM signal to the required RPM (`Input`) should also be fine tuned based on the max speed achieved during the robots movement.
+
+### Week 17 (November 15th to November 21st)
+* Fine tuned the `Kp`, `Ki` and `Kd` values. The motors were tested without ground contact. The observations were as followed:
+  * High `Kp` (`Kp = 1` is shown in image) resulted in quicker settling time but caused high amplitude oscillations.![kp_1](https://user-images.githubusercontent.com/54039395/144381264-fae566f4-e256-42a7-bba9-b8b4a5e3db95.JPG)
+  * Low `Kp` (`Kp = 0.01` is shown in image) resulted in slower settling time but caused smaller oscillations.![kp_ 01](https://user-images.githubusercontent.com/54039395/144381334-c3520afc-86e9-4ada-987c-269770bd9731.JPG)
+  * `Ki` seemed to follow a similar pattern except that the settling time seems to increase drasticially with a decrease in `Ki` (`Ki = 0.01` shown in image).![ki_ 01](https://user-images.githubusercontent.com/54039395/144381371-3e5d33af-81f9-41c4-8242-e913b6c84fba.JPG)
+  * `Kd` didn't seem to have a noticeable impact on the speed curve (attempted values: `Kd = 0 to 10,000`). This is likely due to the rapid oscillations.
+  * Settled at the following values: `Kp = 0.01`, `Ki = 0.4`, `Kd = 0`.
+* Tested the robot with the PID control on the ground. Noticed an issue where the Arduino power decreases when the motors' speeds increase gradually. This behavior is not present when the robot is being driven without PID control. One guess as to why this might be caused is the rapid oscillations (although I'm not certain how exactly that happens).
+* Explored the usage of polar coordinates and curve fitting to fix the problem with lane lines falling on the center.
+  * Turns out this isn't possible with the way the lane lines are built on the track since curves are made of multiple straight lines on the track.![curve_fitting_issue](https://user-images.githubusercontent.com/54039395/144384062-f31d34fb-12fe-4a72-9c8c-ad5e257d1383.jpg). Thus, there would be sharp corners which the curve fitting algorithm fails on.
+  * However, it seems that considering only a small fraction of the image works well for detecting Hough lines in most cases.
+* Developed a new algorithm for lane detection. It is a hybrid of the multiple rows lane detection and the Hough line gradient method. The logic is as follows:
+  1. Detect the lines on the image using canny edge detection.
+  2. If no lines were detected use the multiple rows method to determine the turn amount.
+  3. If lines were detected, check the gradient of the longest detected line.
+    * If the longest line has a positive gradient `and` it's located within 3/4th of the image from the right, then turn right as much as possible.
+    * If the longest line has a negative gradient `and` it's located within 3/4th of the image from the left, then turn left as much as possible.
+    * If neither, use the multiple rows method to determine the turn amount.
+* This algorithm was able to solve the issue of lane lines falling on the center. With this, the robot was able to navigaate much more consistently, thus making the PID control unnecessary.
