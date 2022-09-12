@@ -59,8 +59,8 @@ while True:
 
     # Object Detection portion
     multiplier, det_img = od.get_speed_multiplier(img, True)
-    # mv.set_speed(100 * multiplier)
-    # mv.apply_speeds()
+    mv.set_speed(100 * multiplier)
+    mv.apply_speeds()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
