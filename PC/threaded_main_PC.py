@@ -1,4 +1,4 @@
-# from MovementModule.movement import Movement
+from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 from ObjectDetectionModule.object_detection import ObjectDetection
 from ObjectDetectionModule.od_handlers import ODHandlerType
@@ -23,7 +23,7 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-# mv = Movement(calibration=10)
+mv = Movement(calibration=10)
 ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
 od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
 
@@ -37,8 +37,8 @@ def detect_lanes_and_apply_speed():
     if turn_amount:
         turn_amount = min(40, max(-40, turn_amount))
         print(turn_amount)
-        # mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
-    # mv.apply_speeds()
+        mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
+    mv.apply_speeds()
 
 
 while True:
