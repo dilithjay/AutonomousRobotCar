@@ -1,3 +1,6 @@
+#include "SoftwareSerial.h"
+SoftwareSerial MyBlue(0, 1);
+
 // L298N motor driver control pins
 const byte enA = 11;
 const byte in1 = 9;
@@ -26,24 +29,28 @@ void setup() {
 
   // Initialize Serial for printing results
   Serial.begin(9600);
+  MyBlue.begin(9600); 
   // Ensure Serial is ready
   while (! Serial);
 }
 
 void loop() {
   // Check if any of the distances from the 3 ultrasonic sensors were below the threshold.
-  /*if (getUltrasonicDistance(uss_mid) < threshold ||
+  if (getUltrasonicDistance(uss_mid) < threshold ||
       getUltrasonicDistance(uss_left) < threshold ||
       getUltrasonicDistance(uss_right) < threshold){
     stop_and_wait(5000);
     return;
-  }*/
+  }
   
 
   if (Serial.available() == 2){
-    left_speed = Serial.read();
-    right_speed = Serial.read();
-    Serial.println("1");
+    left_speed = MyBlue.read();
+    right_speed = MyBlue.read();
+    MyBlue.write("L: ");
+    MyBlue.write(left_speed);
+    MyBlue.write("\nR: ");
+    MyBlue.write(right_speed);
   }
   setLeftSpeed(left_speed);
   setRightSpeed(right_speed);

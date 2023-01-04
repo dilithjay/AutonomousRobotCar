@@ -20,8 +20,10 @@ class PedestrianODHandler(ODHandler):
         for pedestrian in detection_dict["pedestrian"]:
             x, y = pedestrian
             nearest = max(nearest, y)
-
-        return max(0.7 - nearest, 0)
+        if nearest > 0.6:
+            print("Pedestrian nearby.")
+            return 0
+        return 1
 
 
 class VehicleODHandler(ODHandler):
@@ -31,7 +33,10 @@ class VehicleODHandler(ODHandler):
             x, y = vehicle
             nearest = max(nearest, y)
 
-        return max(0.7 - nearest, 0)
+        if nearest > 0.3:
+            print("Vehicle nearby.")
+            return 0
+        return 1
 
 
 class TrafficLightODHandler(ODHandler):
@@ -42,14 +47,17 @@ class TrafficLightODHandler(ODHandler):
         if self.stopped:
             for green in detection_dict["light_green"]:
                 x, y = green
-                if y < 0.5:
+                if y > 0.4:
+                    print("Started")
+                    self.stopped = False
                     break
             else:
                 return 0
         else:
             for red in detection_dict["light_red"]:
                 x, y = red
-                if y < 0.5:
+                if y > 0.4:
+                    print("stopped")
                     self.stopped = True
                     return 0
         return 1

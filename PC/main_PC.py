@@ -1,7 +1,6 @@
 from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 from ObjectDetectionModule.object_detection import ObjectDetection
-from ObjectDetectionModule.od_handlers import ODHandlerType
 
 import cv2
 
@@ -22,9 +21,9 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-mv = Movement(calibration=10)
+mv = Movement(calibration=-5)
 ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.HYBRID)
-od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
+od = ObjectDetection()
 
 count = 0
 
@@ -40,10 +39,11 @@ while True:
 
     # Lane Detection portion
     turn_amount, canny = ld.get_turn_amount(img)
-    print(turn_amount)
+    canny = cv2.putText(canny, str(turn_amount), (300, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     cv2.imshow("canny", canny)
 
     cv2.imwrite("Images/" + str(count) + " - t_a = " + str(turn_amount) + ".jpg", canny)
+    cv2.imwrite("Images/org-" + str(count) + ".jpg", img)
     count += 1
 
     if turn_amount:
@@ -52,10 +52,12 @@ while True:
 
     # Object Detection portion
     multiplier, det_img = od.get_speed_multiplier(img, True)
-    mv.set_speed(100 * multiplier)
+    mv.set_speed(110)
+    mv.set_speed_multiplier(multiplier)
 
     mv.apply_speeds()
     cv2.imshow("detected", det_img)
+    cv2.imwrite("Images/det-" + str(count) + ".jpg", det_img)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

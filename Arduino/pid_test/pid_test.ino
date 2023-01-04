@@ -21,7 +21,7 @@ float rpm_A = 0.0f, rpm_B = 0.0f;
 
 // Variables for byte to rpm mapping
 const float min_byte = 70, max_byte = 255;
-const float max_rpm = 250, min_rpm = 100;
+const float min_rpm = 100, max_rpm = 250;
 
 byte left_speed, right_speed;
 bool speed_received = false;
@@ -101,23 +101,28 @@ void loop() {
     target_B = get_rpm_from_byte(Serial.read());
     //Serial.println("-----------Received-----------");
     print_targets();
-    print_targets();
     print_RPMs();
   }
   
   pid_A.run();
   pid_B.run();
-  
-  left_speed = (byte) output_A;
-  right_speed = (byte) output_B;
-  //print_speeds();
+
+  if (target_A == 0 and target_B == 0){
+    stop_and_wait(100);
+  }
+  else{
+    
+    left_speed = (byte) output_A;
+    right_speed = (byte) output_B;
+    //print_speeds();
     //print_targets();
     //print_RPMs();
-  
-  setLeftSpeed(left_speed);
-  setRightSpeed(right_speed);
-  
-  delay(100);
+    
+    setLeftSpeed(left_speed);
+    setRightSpeed(right_speed);
+    
+    delay(100);    
+  }  
 }
 
 double get_rpm_from_byte(byte num){

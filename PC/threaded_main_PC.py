@@ -1,7 +1,6 @@
 from MovementModule.movement import Movement
 from LaneDetectionModule.lane_detection import LaneDetection, LaneDetectionHandlerType
 from ObjectDetectionModule.object_detection import ObjectDetection
-from ObjectDetectionModule.od_handlers import ODHandlerType
 
 import cv2
 import threading
@@ -10,12 +9,12 @@ import threading
 import os
 import glob
 
-files = glob.glob('Images/*.jpg')
+files = glob.glob('ObjectDetectionModule/images/*.jpg')
 for f in files:
     os.remove(f)
 # ===================================
 
-TURN_AMOUNT_MULTIPLIER = 1.2
+TURN_AMOUNT_MULTIPLIER = 0.8
 
 cap = cv2.VideoCapture(1)
 if not cap.isOpened():
@@ -23,9 +22,9 @@ if not cap.isOpened():
     exit()
 
 # Initialize module objects
-mv = Movement(calibration=10)
-ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.MANY_ROWS)
-od = ObjectDetection(handler_types={ODHandlerType.PEDESTRIAN, ODHandlerType.VEHICLE, ODHandlerType.TRAFFIC_LIGHT})
+mv = Movement(calibration=0)
+ld = LaneDetection(crop_range_h=(.85, .95), crop_range_w=(0, 1), method=LaneDetectionHandlerType.HYBRID)
+od = ObjectDetection()
 
 count = 0
 canny = None
@@ -37,8 +36,9 @@ def detect_lanes_and_apply_speed():
     if turn_amount:
         turn_amount = min(40, max(-40, turn_amount))
         print(turn_amount)
-        # mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
-    # mv.apply_speeds()
+        mv.set_turn_amount(int(turn_amount * TURN_AMOUNT_MULTIPLIER))
+    mv.apply_speeds()
+    cv2.imwrite(f"ObjectDetectionModule/images/{count}_{turn_amount}.jpg", canny)
 
 
 while True:
@@ -50,6 +50,7 @@ while True:
 
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
     cv2.imshow('original', img)
+    # cv2.imwrite("ObjectDetectionModule/images/" + str(count) + "_original.jpg", img)
 
     # Lane Detection portion
     lane_det_thread = threading.Thread(target=detect_lanes_and_apply_speed)
@@ -59,13 +60,17 @@ while True:
 
     # Object Detection portion
     multiplier, det_img = od.get_speed_multiplier(img, True)
-    mv.set_speed(100 * multiplier)
+    mv.set_speed(105)
+    mv.set_speed_multiplier(multiplier)
     mv.apply_speeds()
-    cv2.imshow("canny", det_img)
+
+    cv2.imshow("detections", det_img)
+    cv2.imwrite(f"ObjectDetectionModule/images/det_{count}.jpg", det_img)
+    count += 1
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# mv.reset_speeds()
+mv.reset_speeds()
 cap.release()
 cv2.destroyAllWindows()

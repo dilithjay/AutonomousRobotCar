@@ -24,7 +24,7 @@ const byte uss_mid = 10;
 const byte uss_right = 4;
 
 // Minimum distance for collision in centimeters
-const byte threshold = 15;
+const byte threshold = 12;
 
 byte left_speed, right_speed;
 bool speed_received = false;
@@ -69,12 +69,12 @@ void setup() {
 
 void loop() {
   // Check if any of the distances from the 3 ultrasonic sensors were below the threshold.
-  /*if (getUltrasonicDistance(uss_mid) < threshold ||
+  if (getUltrasonicDistance(uss_mid) < threshold ||
       getUltrasonicDistance(uss_left) < threshold ||
       getUltrasonicDistance(uss_right) < threshold){
     stop_and_wait(5000);
     return;
-    }*/
+  }
 
 
   if (Serial.available() == 2){

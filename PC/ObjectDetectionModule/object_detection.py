@@ -10,17 +10,14 @@ from PC.ObjectDetectionModule.tf_utils import visualization_utils as vis_util
 
 
 class ObjectDetection:
-    def __init__(self, handler_types: set):
-        self.handlers = {}
-        for handler in handler_types:
-            if handler == ODHandlerType.PEDESTRIAN:
-                self.handlers[handler] = PedestrianODHandler()
-            elif handler == ODHandlerType.VEHICLE:
-                self.handlers[handler] = VehicleODHandler()
-            else:   # handler == ODHandlerType.TRAFFIC_LIGHT:
-                self.handlers[handler] = TrafficLightODHandler()
+    def __init__(self):
+        self.handlers = {
+            ODHandlerType.PEDESTRIAN: PedestrianODHandler(),
+            ODHandlerType.VEHICLE: VehicleODHandler(),
+            ODHandlerType.TRAFFIC_LIGHT: TrafficLightODHandler()
+        }
 
-        model_dir = 'ObjectDetectionModule/models/my_model/saved_model'
+        model_dir = 'ObjectDetectionModule/models/my_model_5/saved_model'
         self.model = tf.saved_model.load(str(model_dir))
         self.class_index = label_map_util.create_category_index_from_labelmap('ObjectDetectionModule/label_map.pbtxt',
                                                                               use_display_name=True)
@@ -62,9 +59,11 @@ class ObjectDetection:
     def get_speed_multiplier(self, image, show_det=False):
         output_dict = self.run_inference(image)
         min_multiplier = 1
+        output_dict, filtered_dict = self.get_filtered_output_dict(output_dict)
+
         for handler in self.handlers:
             min_multiplier = min(min_multiplier, self.handlers[handler].
-                                 get_speed_multiplier(self.get_filtered_output_dict(output_dict)))
+                                 get_speed_multiplier(filtered_dict))
 
         if show_det:
             vis_util.visualize_boxes_and_labels_on_image_array(
@@ -75,13 +74,36 @@ class ObjectDetection:
                 self.class_index,
                 instance_masks=output_dict.get('detection_masks_reframed', None),
                 use_normalized_coordinates=True,
-                line_thickness=8)
+                line_thickness=8,
+                min_score_thresh=.2)
 
         return min_multiplier, image
 
     def get_filtered_output_dict(self, output_dict):
         num_detections = output_dict['num_detections']
-        per_class_threshold = {"vehicle": 0.9, "pedestrian": 0.9, "light_red": 0.3, "light_green": 0.4}
+        per_class_threshold = {"vehicle": 0.99, "pedestrian": 0.99, "light_red": 0.2, "light_green": 0.2}
+
+        new_dict = {'detection_boxes': [], 'detection_classes': [], 'detection_scores': []}
+        filtered_dict = {}
+        for index in self.class_index:
+            filtered_dict[self.class_index[index]['name']] = []
+
+        for i in range(num_detections):
+            class_name = self.class_index[output_dict['detection_classes'][i]]['name']
+            if output_dict['detection_scores'][i] > per_class_threshold[class_name]:
+                for key in new_dict:
+                    new_dict[key].append(output_dict[key][i])
+                y1, x1, y2, x2 = output_dict['detection_boxes'][i]
+                filtered_dict[class_name].append(((x1 + x2) / 2, (y1 + y2) / 2))
+
+        for key in new_dict:
+            new_dict[key] = np.array(new_dict[key])
+
+        return new_dict, filtered_dict
+
+    def get_filtered_output_dict1(self, output_dict):
+        num_detections = output_dict['num_detections']
+        per_class_threshold = {"vehicle": 0.99, "pedestrian": 0.99, "light_red": 0.3, "light_green": 0.4}
 
         new_dict = {}
         for index in self.class_index:
@@ -90,6 +112,7 @@ class ObjectDetection:
         for i in range(num_detections):
             class_name = self.class_index[output_dict['detection_classes'][i]]['name']
             if output_dict['detection_scores'][i] > per_class_threshold[class_name]:
-                print(class_name)
-                new_dict[class_name].append(output_dict['detection_boxes'][i])
+                y1, x1, y2, x2 = output_dict['detection_boxes'][i]
+                new_dict[class_name].append(((x1 + x2) / 2, (y1 + y2) / 2))
+
         return new_dict

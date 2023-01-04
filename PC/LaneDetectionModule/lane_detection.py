@@ -182,9 +182,9 @@ class LaneDetection:
         l_fraction, r_fraction, canny = self.get_speed_fractions(image)
 
         if l_fraction == 0 and r_fraction > 0:
-            turn_amount = int((self.correct_fraction - r_fraction) * 64)
+            turn_amount = int((self.correct_fraction - r_fraction) * 30)
         elif r_fraction == 0 and l_fraction > 0:
-            turn_amount = int((l_fraction - self.correct_fraction) * 64)
+            turn_amount = int((l_fraction - self.correct_fraction) * 30)
         elif l_fraction == 0 and r_fraction == 0:
             turn_amount = None
         else:
@@ -194,7 +194,7 @@ class LaneDetection:
                 self.correct_fraction = l_fraction
         # print(turn_amount)
 
-        return turn_amount, canny
+        return 0, canny
 
 
 def get_line_grad(line):

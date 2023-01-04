@@ -1,7 +1,7 @@
 // Ultrasonic Sensor Pins (3-wire mode)
 #define uss_left 12
 #define uss_mid 10
-#define uss_right 2
+#define uss_right 4
 #define threshold 15
 
 void setup(){
@@ -17,8 +17,6 @@ void loop(){
     delay(5000);
     return;
   }
-  
-  delay(10);
 }
 
 // Calculate distance from ultrasonic sensor readings
